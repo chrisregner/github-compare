@@ -1,0 +1,45 @@
+{
+  "env": {
+    "development": {
+      "presets": [
+        ["env", { "modules": false }],
+        "react"
+      ],
+      "plugins": [
+        "transform-object-rest-spread",
+        "transform-class-properties",
+        "transform-object-entries",
+        "styled-jsx/babel",
+        "webpack-alias"
+      ]
+    },
+    "production": {
+      "presets": [
+        ["env", { "modules": false }],
+        "react"
+      ],
+      "plugins": [
+        "transform-object-rest-spread",
+        "transform-class-properties",
+        "transform-object-entries",
+        "styled-jsx/babel",
+        "tailcall-optimization",
+        "minify-constant-folding",
+        "webpack-alias"
+      ]
+    },
+    "test": {
+      "presets": [
+        "env",
+        "react"
+      ],
+      "plugins": [
+        "transform-object-rest-spread",
+        "transform-class-properties",
+        "transform-object-entries",
+        "styled-jsx/babel",
+        "webpack-alias"
+      ]
+    }
+  }
+}
