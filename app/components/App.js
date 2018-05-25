@@ -2,7 +2,6 @@ import 'tachyons/css/tachyons.min.css' // functional css library: http://tachyon
 import React from 'react'
 import PropTypes from 'prop-types'
 import ReactLoading from 'react-loading'
-import shortid from 'shortid'
 import Repo from './Repo'
 
 const App = ({
@@ -16,7 +15,7 @@ const App = ({
     <h1 className='normal mb4'>GitHub Search App</h1>
 
     <input
-      type="text"
+      type='text'
       className='ba b--gray br3 pa2 w-100 f6'
       placeholder='Search Repo...'
       value={inputValue}
@@ -24,27 +23,17 @@ const App = ({
     />
 
     <div className='pt4'>
-      {(() => {
-        switch (step) {
-          case 0:
-            return
-            break;
-          case 1:
-            return <ReactLoading className='mt5 center' type='spin' color='#333333' />
-            break;
-          case 2:
-            return repos.length
-                ? <React.Fragment>
-                    <span className="dib gray mb3">Matches:</span>
-                    {repos.map(repo => <Repo key={shortid.generate()} {...repo} />)}
-                  </React.Fragment>
-                : <p className='gray'>Sorry, your search has no match.</p>
-            break;
-          case 2.1:
-            return <p className='light-red'>Sorry, an error encountered: {error.message}</p>
-            break;
-        }
-      })()}
+      {{
+        '0': () => null,
+        '1': () => <ReactLoading className='mt5 center' type='spin' color='#333333' />,
+        '2': () => repos.length
+          ? <React.Fragment>
+            <span className='dib gray mb3'>Matches:</span>
+            {repos.map(repo => <Repo key={repo.full_name.replace('/', '__')} {...repo} />)}
+          </React.Fragment>
+          : <p className='gray'>Sorry, your search has no match.</p>,
+        '2.1': () => <p className='light-red'>Sorry, an error encountered: {error.message}</p>,
+      }[String(step)]()}
     </div>
 
     <style jsx>{`

@@ -5,7 +5,8 @@
   "license": "MIT",
   "scripts": {
     "start": "webpack-dev-server --hot --mode development",
-    "build": "del-cli dist/index.html dist/js/* --force && cross-env NODE_ENV=production webpack --mode production"
+    "build": "del-cli dist/index.html dist/js/* --force && cross-env NODE_ENV=production webpack --mode production",
+    "lint": "eslint --ignore-pattern \"dist/**\" **/*.js"
   },
   "dependencies": {
     "axios": "^0.18.0",
@@ -21,11 +22,11 @@
     "redux": "^4.0.0",
     "redux-actions": "^2.3.2",
     "redux-saga": "^0.16.0",
-    "shortid": "^2.2.8",
     "tachyons": "^4.9.1"
   },
   "devDependencies": {
     "babel-core": "^6.26.3",
+    "babel-eslint": "^8.2.3",
     "babel-loader": "^7.1.4",
     "babel-plugin-minify-constant-folding": "^0.4.3",
     "babel-plugin-tailcall-optimization": "^1.0.12",
@@ -40,6 +41,15 @@
     "chunk-manifest-webpack-plugin": "^1.1.2",
     "cross-env": "^5.1.6",
     "css-loader": "^0.28.11",
+    "del-cli": "^1.1.0",
+    "eslint": "^4.19.1",
+    "eslint-config-standard": "^11.0.0",
+    "eslint-config-standard-react": "^6.0.0",
+    "eslint-plugin-import": "^2.12.0",
+    "eslint-plugin-node": "^6.0.1",
+    "eslint-plugin-promise": "^3.7.0",
+    "eslint-plugin-react": "^7.8.2",
+    "eslint-plugin-standard": "^3.1.0",
     "html-webpack-plugin": "^3.2.0",
     "react-hot-loader": "^4.2.0",
     "style-loader": "^0.21.0",

@@ -9,7 +9,7 @@ const defaultState = {
 }
 
 const rootReducer = handleActions({
-  [SEARCH_REPOS]: (state) => ({
+  [SEARCH_REPOS]: state => ({
     step: 1,
     repos: [],
     error: null,
@@ -26,7 +26,7 @@ const rootReducer = handleActions({
     step: 0,
     error: null,
     repos: [],
-  })
+  }),
 }, defaultState)
 
 /* Action Creators */

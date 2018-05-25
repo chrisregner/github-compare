@@ -1,5 +1,5 @@
 import { connect } from 'react-redux'
-import { compose, lifecycle, withStateHandlers } from 'recompose'
+import { compose, withStateHandlers } from 'recompose'
 import App from './App'
 import {
   selectRepos,
@@ -24,7 +24,7 @@ const AppContainer = compose(
       updateInputValue: (state, props) => (inputValue) => {
         props.searchRepos(inputValue.trim())
         return { inputValue: inputValue }
-      }
+      },
     }
   )
 )(App)

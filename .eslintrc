@@ -1,0 +1,20 @@
+{
+  "extends": ["standard", "standard-react"],
+  "parser": "babel-eslint",
+  "globals": {
+    "graphql": true
+  },
+  "rules": {
+    "arrow-parens": ["error", "as-needed", { "requireForBlockBody": true }],
+    "comma-dangle": ["error", "always-multiline"],
+    "curly": ["error", "multi", "consistent"],
+    "max-len": ["error", 100, 2, {
+      "ignoreComments": false,
+      "ignoreRegExpLiterals": true,
+      "ignoreStrings": true,
+      "ignoreTemplateLiterals": true
+      }],
+    "no-console": ["error", { "allow": ["warn", "error"] }],
+    "object-property-newline": "off"
+  }
+}

@@ -10,6 +10,7 @@ import StarIcon from '../icons/StarIcon'
 import UserIcon from '../icons/UserIcon'
 import WarningIcon from '../icons/WarningIcon'
 
+/* eslint-disable camelcase */
 const Repo = ({
   name,
   full_name,
@@ -25,12 +26,12 @@ const Repo = ({
   owner_url,
 }) =>
   <div className='_wrapper mb4 bl bw1 b--light-silver pv2 pl3'>
-    <div className="flex flex-wrap items-center mb2">
+    <div className='flex flex-wrap items-center mb2'>
       <h2 className='pr3 f4 normal lh-title'>{name}</h2>
       <span className='pr1'>
         <LinkIcon width='.75em' height='.75em' color='#555555' />
       </span>
-      <span className="dib f6">
+      <span className='dib f6'>
         <a href={html_url} className='blue no-underline'>{full_name}</a>
       </span>
     </div>
@@ -62,6 +63,11 @@ const Repo = ({
       <span className='mr3'>{open_issues_count}</span>
 
       <span className='pr1'>
+        <ForkIcon width='1.2em' height='1.2em' color='#555555' />
+      </span>
+      <span className='mr3'>{forks_count}</span>
+
+      <span className='pr1'>
         <EyeIcon width='1.5em' height='1.5em' color='#555555' />
       </span>
       <span className='mr3'>{watchers_count}</span>
@@ -71,6 +77,7 @@ const Repo = ({
       ? <p className='f6 lh-copy'>{description}</p>
       : <p className='f6 lh-copy gray'>(No description provided)</p>}
   </div>
+/* eslint-enable camelcase */
 
 Repo.propTypes = {
   name: PropTypes.string.isRequired,
