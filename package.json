@@ -9,12 +9,17 @@
     "lint": "eslint --ignore-pattern \"dist/**\" **/*.js"
   },
   "dependencies": {
+    "apollo-client-preset": "^1.0.8",
+    "apollo-link-context": "^1.0.8",
     "axios": "^0.18.0",
     "axios-extensions": "^3.0.2",
     "date-fns": "^1.29.0",
+    "graphql": "^0.13.2",
+    "graphql-tag": "^2.9.2",
     "prop-types": "^15.6.1",
     "ramda": "^0.25.0",
     "react": "^16.3.2",
+    "react-apollo": "^2.1.4",
     "react-dom": "^16.3.2",
     "react-loading": "^2.0.2",
     "react-redux": "^5.0.7",
@@ -22,6 +27,7 @@
     "redux": "^4.0.0",
     "redux-actions": "^2.3.2",
     "redux-saga": "^0.16.0",
+    "remove": "^0.1.5",
     "tachyons": "^4.9.1"
   },
   "devDependencies": {

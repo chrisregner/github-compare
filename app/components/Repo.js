@@ -13,17 +13,17 @@ import WarningIcon from '../icons/WarningIcon'
 /* eslint-disable camelcase */
 const Repo = ({
   name,
-  full_name,
-  html_url,
+  nameWithOwner,
+  githubUrl,
   description,
-  created_at,
-  updated_at,
-  stargazers_count,
-  open_issues_count,
-  watchers_count,
-  forks_count,
-  owner_name,
-  owner_url,
+  createdAt,
+  updatedAt,
+  forkCount,
+  stargazerCount,
+  openIssueCount,
+  watcherCount,
+  ownerUsername,
+  ownerGithubUrl,
 }) =>
   <div className='_wrapper mb4 bl bw1 b--light-silver pv2 pl3'>
     <div className='flex flex-wrap items-center mb2'>
@@ -32,7 +32,7 @@ const Repo = ({
         <LinkIcon width='.75em' height='.75em' color='#555555' />
       </span>
       <span className='dib f6'>
-        <a href={html_url} className='blue no-underline'>{full_name}</a>
+        <a href={githubUrl} className='blue no-underline'>{nameWithOwner}</a>
       </span>
     </div>
 
@@ -40,37 +40,37 @@ const Repo = ({
       <span className='pr1'>
         <UserIcon width='1em' height='1em' color='#555555' />
       </span>
-      <a href={owner_url} className='mr3 blue no-underline'>{owner_name}</a>
+      <a href={ownerGithubUrl} className='mr3 blue no-underline'>{ownerUsername}</a>
 
       <span className='pr1'>
         <CalendarIcon width='1em' height='1em' color='#555555' />
       </span>
-      <span className='mr3'>{format(new Date(created_at), 'MM/DD/YY')}</span>
+      <span className='mr3'>{format(new Date(createdAt), 'MM/DD/YY')}</span>
 
       <span className='pr1'>
         <PencilIcon width='1em' height='1em' color='#555555' />
       </span>
-      <span className='mr3'>{format(new Date(updated_at), 'MM/DD/YY')}</span>
+      <span className='mr3'>{format(new Date(updatedAt), 'MM/DD/YY')}</span>
 
       <span className='pr1'>
         <StarIcon width='1.2em' height='1.2em' color='#555555' />
       </span>
-      <span className='mr3'>{stargazers_count}</span>
+      <span className='mr3'>{stargazerCount}</span>
 
       <span className='pr1'>
         <WarningIcon width='1em' height='1em' color='#555555' />
       </span>
-      <span className='mr3'>{open_issues_count}</span>
+      <span className='mr3'>{openIssueCount}</span>
 
       <span className='pr1'>
         <ForkIcon width='1.2em' height='1.2em' color='#555555' />
       </span>
-      <span className='mr3'>{forks_count}</span>
+      <span className='mr3'>{forkCount}</span>
 
       <span className='pr1'>
         <EyeIcon width='1.5em' height='1.5em' color='#555555' />
       </span>
-      <span className='mr3'>{watchers_count}</span>
+      <span className='mr3'>{watcherCount}</span>
     </div>
 
     {description
@@ -81,17 +81,17 @@ const Repo = ({
 
 Repo.propTypes = {
   name: PropTypes.string.isRequired,
-  full_name: PropTypes.string.isRequired,
-  html_url: PropTypes.string.isRequired,
+  nameWithOwner: PropTypes.string.isRequired,
+  githubUrl: PropTypes.string.isRequired,
   description: PropTypes.string,
-  created_at: PropTypes.string.isRequired,
-  updated_at: PropTypes.string.isRequired,
-  stargazers_count: PropTypes.number.isRequired,
-  open_issues_count: PropTypes.number.isRequired,
-  watchers_count: PropTypes.number.isRequired,
-  forks_count: PropTypes.number.isRequired,
-  owner_name: PropTypes.string.isRequired,
-  owner_url: PropTypes.string.isRequired,
+  createdAt: PropTypes.string.isRequired,
+  updatedAt: PropTypes.string.isRequired,
+  forkCount: PropTypes.number.isRequired,
+  stargazerCount: PropTypes.number.isRequired,
+  openIssueCount: PropTypes.number.isRequired,
+  watcherCount: PropTypes.number.isRequired,
+  ownerUsername: PropTypes.string.isRequired,
+  ownerGithubUrl: PropTypes.string.isRequired,
 }
 
 export default Repo

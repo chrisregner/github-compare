@@ -7,8 +7,8 @@ import Repo from './Repo'
 const App = ({
   inputValue,
   updateInputValue,
-  step,
-  repos,
+  searchResult,
+  loading,
   error,
 }) =>
   <div className='center pa3 pa4-l mw7 near-black sans-serif'>
@@ -23,17 +23,17 @@ const App = ({
     />
 
     <div className='pt4'>
-      {{
-        '0': () => null,
-        '1': () => <ReactLoading className='mt5 center' type='spin' color='#333333' />,
-        '2': () => repos.length
-          ? <React.Fragment>
-            <span className='dib gray mb3'>Matches:</span>
-            {repos.map(repo => <Repo key={repo.full_name.replace('/', '__')} {...repo} />)}
-          </React.Fragment>
-          : <p className='gray'>Sorry, your search has no match.</p>,
-        '2.1': () => <p className='light-red'>Sorry, an error encountered: {error.message}</p>,
-      }[String(step)]()}
+      {!loading && searchResult && searchResult.length > 0
+        && <React.Fragment>
+          <span className='dib gray mb3'>Matches:</span>
+          {searchResult.map(repo => <Repo key={repo.nameWithOwner.replace('/', '__')} {...repo} />)}
+        </React.Fragment>}
+
+      {!loading && !!inputValue.trim() && searchResult && searchResult.length === 0
+        && <p className='gray'>Sorry, your search has no match.</p>}
+
+      {error && <p className='light-red'>Sorry, an error encountered: {error.message}</p>}
+      {loading && <ReactLoading className='mt5 center' type='spin' color='#333333' />}
     </div>
 
     <style jsx>{`
@@ -58,11 +58,11 @@ const App = ({
 App.propTypes = {
   inputValue: PropTypes.string.isRequired,
   updateInputValue: PropTypes.func.isRequired,
-  step: PropTypes.number.isRequired,
-  repos: PropTypes.array.isRequired,
+  searchResult: PropTypes.arrayOf(PropTypes.shape({
+    nameWithOwner: PropTypes.string.isRequired,
+  })),
   error: PropTypes.instanceOf(Error),
+  loading: PropTypes.bool.isRequired,
 }
-
-// TODO: Add prop types
 
 export default App

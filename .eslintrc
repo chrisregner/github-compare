@@ -15,6 +15,7 @@
       "ignoreTemplateLiterals": true
       }],
     "no-console": ["error", { "allow": ["warn", "error"] }],
-    "object-property-newline": "off"
+    "object-property-newline": "off",
+    "operator-linebreak": ["error", "before"]
   }
 }
