@@ -6,7 +6,7 @@ import App from './App'
 
 const SEARCH_REPO_QUERY = gql`
   query SearchRepoQuery($query: String!, $after: String) {
-    search(query: $query, after: $after, type: REPOSITORY, first: 30) {,
+    search(query: $query, after: $after, type: REPOSITORY, first: 10) {,
       pageInfo {
         endCursor,
         hasNextPage,
@@ -40,33 +40,67 @@ const AppContainer = compose(
         query: inputValue.trim(),
       },
     }),
+
     skip: props => props.inputValue.trim() === '',
-    props: ({ data: { error, loading, search, fetchMore }, ownProps: { inputValue } }) => ({
-      error, loading,
-      onLoadMore: search && search.pageInfo.hasNextPage
-        && (() => fetchMore({
+
+    props: ({
+      data: { error, networkStatus, search, fetchMore, variables },
+      ownProps: { inputValue }
+    }) => ({
+      error,
+
+      status: (() => {
+        switch (networkStatus) {
+          case 1:
+          case 2:
+          case 3:
+            return 'loading'
+          case 8:
+            return 'error'
+          case 7:
+            switch (true) {
+              case (variables.query.length && !(search.nodes && search.nodes.length)):
+                return 'no-match'
+              case (search && search.pageInfo.hasNextPage):
+                return 'can-load-more'
+              case (search && !search.pageInfo.hasNextPage):
+                return 'no-more'
+              default:
+                return 'ready'
+            }
+          default:
+            throw new Error('Unanticipated networkStatus encountered')
+        }
+      })(),
+
+      onLoadMore: (search && search.pageInfo.hasNextPage)
+        ? (() => fetchMore({
           variables: {
             query: inputValue.trim(),
             after: search.pageInfo.endCursor,
           },
-          updateQuery: (old, { fetchMoreResult: newer }) =>
-            !newer ? old : {
+          updateQuery: (oldRes, { fetchMoreResult: newRes }) =>
+            !newRes ? oldRes : {
               search: {
-                ...newer.search,
-                nodes: [...old.search.nodes, ...newer.search.nodes],
+                ...newRes.search,
+                nodes: [...oldRes.search.nodes, ...newRes.search.nodes],
               }
             }
-        })),
-      searchResult: search && search.nodes.map(repo => ({
-        ...pick(['name', 'nameWithOwner', 'description', 'createdAt', 'updatedAt'], repo),
-        githubUrl: repo.url,
-        forkCount: repo.forks.totalCount,
-        stargazerCount: repo.stargazers.totalCount,
-        openIssueCount: repo.issues.totalCount,
-        watcherCount: repo.watchers.totalCount,
-        ownerUsername: repo.owner.login,
-        ownerGithubUrl: repo.owner.url,
-      })),
+        }))
+        : null,
+
+      searchResult: (networkStatus !== 2 && search)
+        ? search.nodes.map(repo => ({
+          ...pick(['name', 'nameWithOwner', 'description', 'createdAt', 'updatedAt'], repo),
+          githubUrl: repo.url,
+          forkCount: repo.forks.totalCount,
+          stargazerCount: repo.stargazers.totalCount,
+          openIssueCount: repo.issues.totalCount,
+          watcherCount: repo.watchers.totalCount,
+          ownerUsername: repo.owner.login,
+          ownerGithubUrl: repo.owner.url,
+        }))
+        : null,
     }),
   }),
 )(App)

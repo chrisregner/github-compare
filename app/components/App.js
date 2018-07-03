@@ -8,7 +8,7 @@ const App = ({
   inputValue,
   updateInputValue,
   searchResult,
-  loading,
+  status = 'ready',
   error,
   onLoadMore,
 }) =>
@@ -29,38 +29,35 @@ const App = ({
         && <React.Fragment>
           <span className='dib gray mb3'>Matches:</span>
           {searchResult.map(repo =>
-            <div className='mb3'>
-              <Repo key={repo.nameWithOwner.replace('/', '__')} {...repo} />
+            <div key={repo.nameWithOwner.replace('/', '__')} className='mb3'>
+              <Repo {...repo} />
             </div>)}
         </React.Fragment>}
 
-      {/* No Match */}
-      {!loading && !!inputValue.trim() && searchResult && !searchResult.length
-        && <p className='gray'>Sorry, your search has no match.</p>}
-
-      {/* Error */}
-      {error && <p className='light-red'>Sorry, an error encountered: {error.message}</p>}
-
-      {/* Load More */}
-      {!loading && !error && onLoadMore &&
-        <button
-          className='button-reset db br2 bn pa2 w-100 bg-dark-gray hover-bg-gray f6 white ttu'
-          onClick={onLoadMore}
-        >
-          Load More
-        </button>}
-
-      {/* No More */}
-      {!loading && !error && !onLoadMore && searchResult && !!searchResult.length &&
-        <button
-          className='button-reset db br2 bn pa2 w-100 bg-gray f6 white ttu'
-          disabled
-        >
-          That's All Folks!
-        </button>}
-
-      {/* Loader */}
-      {loading && <ReactLoading className='mt4 center' type='spin' color='#333333' />}
+      {(() => {
+        switch (status) {
+          case 'can-load-more':
+            return <button
+              className='button-reset db br2 bn pa2 w-100 bg-dark-gray hover-bg-gray f6 white ttu'
+              onClick={onLoadMore}
+            >
+              Load More
+            </button>
+          case 'error':
+            return <p className='light-red'>Sorry, an error encountered: {error.message}</p>
+          case 'loading':
+            return <ReactLoading className='mt4 center' type='spin' color='#333333' />
+          case 'no-match':
+            return <p className='gray'>Sorry, your search has no match.</p>
+          case 'no-more':
+            return <button
+              className='button-reset db br2 bn pa2 w-100 bg-gray f6 white ttu'
+              disabled
+            >
+              That's All Folks!
+            </button>
+        }
+      })()}
     </div>
 
     <style jsx>{`
@@ -83,7 +80,6 @@ const App = ({
   </div>
 
 App.propTypes = {
-  loading: PropTypes.bool,
   error: PropTypes.instanceOf(Error),
   onLoadMore: PropTypes.func,
   inputValue: PropTypes.string.isRequired,
@@ -91,6 +87,14 @@ App.propTypes = {
   searchResult: PropTypes.arrayOf(PropTypes.shape({
     nameWithOwner: PropTypes.string.isRequired,
   })),
+  status: PropTypes.oneOf([
+    'can-load-more',
+    'error',
+    'loading',
+    'no-match',
+    'no-more',
+    'ready',
+  ]),
 }
 
 export default App
