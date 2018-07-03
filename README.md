@@ -1,5 +1,6 @@
 # todo
 
+- 404
 - graphql
   - pagination
   - input throttling/debounce

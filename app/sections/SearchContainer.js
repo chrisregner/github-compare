@@ -1,8 +1,10 @@
-import { compose, withState, withPropsOnChange } from 'recompose'
+import { compose, withState } from 'recompose'
 import { graphql } from 'react-apollo'
-import gql from 'graphql-tag'
+import { connect } from 'react-redux'
 import { pick } from 'ramda'
-import App from './App'
+import gql from 'graphql-tag'
+import Search from './SearchContainer/Search'
+import { toggleCandidate, getIds } from 'app/state/candidates'
 
 const SEARCH_REPO_QUERY = gql`
   query SearchRepoQuery($query: String!, $after: String) {
@@ -31,8 +33,13 @@ const SEARCH_REPO_QUERY = gql`
   }
 `
 
-const AppContainer = compose(
+export default compose(
   withState('inputValue', 'updateInputValue', ''),
+
+  connect(
+    state => ({ candidateIds: getIds(state) }),
+    { toggleCandidate }
+  ),
 
   graphql(SEARCH_REPO_QUERY, {
     options: ({ inputValue }) => ({
@@ -105,6 +112,4 @@ const AppContainer = compose(
         : null,
     }),
   }),
-)(App)
-
-export default AppContainer
+)(Search)

@@ -2,14 +2,23 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import { AppContainer } from 'react-hot-loader'
 import { ApolloProvider } from 'react-apollo'
-import App from './components/AppContainer'
+import { Provider } from 'react-redux'
+import { createStore } from 'redux'
+import { BrowserRouter } from 'react-router-dom'
+import reducer from 'app/state'
+import App from './App'
 import client from './api'
 
+const store = createStore(reducer)
 const render = Component =>
   ReactDOM.render(
     <AppContainer>
       <ApolloProvider client={client}>
-        <Component />
+        <Provider store={store}>
+          <BrowserRouter>
+            <Component />
+          </BrowserRouter>
+        </Provider>
       </ApolloProvider>
     </AppContainer>,
     document.getElementById('root')
@@ -18,4 +27,4 @@ const render = Component =>
 render(App)
 
 if (module.hot)
-  module.hot.accept('./components/AppContainer', () => render(App))
+  module.hot.accept('./App', () => render(App))

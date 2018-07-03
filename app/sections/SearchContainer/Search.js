@@ -1,21 +1,21 @@
-import 'tachyons/css/tachyons.min.css' // functional css library: http://tachyons.io
+import 'tachyons/css/tachyons.min.css'
 import React from 'react'
 import PropTypes from 'prop-types'
 import ReactLoading from 'react-loading'
-import Repo from './Repo'
+import Repo from './Search/Repo'
 
-const App = ({
+const Search = ({
+  candidateIds,
+  error,
   inputValue,
-  updateInputValue,
+  onLoadMore,
   repositoryCount,
   searchResult,
   status = 'ready',
-  error,
-  onLoadMore,
+  toggleCandidate,
+  updateInputValue,
 }) =>
-  <div className='center pa3 pa4-l mb4 mw7 near-black sans-serif'>
-    <h1 className='normal mb4'>GitHub Search App</h1>
-
+  <div>
     <input
       type='text'
       className='ba b--gray br2 pa2 w-100 f6'
@@ -34,7 +34,11 @@ const App = ({
           </div>
           {searchResult.map(repo =>
             <div key={repo.nameWithOwner.replace('/', '__')} className='mb3'>
-              <Repo {...repo} />
+              <Repo
+                toggleCandidate={toggleCandidate.bind(null, repo)}
+                isAdded={candidateIds.includes(repo.nameWithOwner)}
+                {...repo}
+              />
             </div>)}
         </React.Fragment>}
 
@@ -65,15 +69,6 @@ const App = ({
     </div>
 
     <style jsx>{`
-      /* base global styles */
-      :global(h1),
-      :global(h2),
-      :global(h3),
-      :global(h4),
-      :global(h5),
-      :global(h6),
-      :global(p) { margin: 0 }
-
       /* custom styles */
       input:focus, input:hover {
         margin: -1px;
@@ -83,15 +78,12 @@ const App = ({
     `}</style>
   </div>
 
-App.propTypes = {
+Search.propTypes = {
+  candidateIds: PropTypes.arrayOf(PropTypes.string).isRequired,
   error: PropTypes.instanceOf(Error),
-  onLoadMore: PropTypes.func,
   inputValue: PropTypes.string.isRequired,
-  updateInputValue: PropTypes.func.isRequired,
+  onLoadMore: PropTypes.func,
   repositoryCount: PropTypes.number,
-  searchResult: PropTypes.arrayOf(PropTypes.shape({
-    nameWithOwner: PropTypes.string.isRequired,
-  })),
   status: PropTypes.oneOf([
     'can-load-more',
     'error',
@@ -100,6 +92,11 @@ App.propTypes = {
     'no-more',
     'ready',
   ]),
+  searchResult: PropTypes.arrayOf(PropTypes.shape({
+    nameWithOwner: PropTypes.string.isRequired,
+  })),
+  toggleCandidate: PropTypes.func.isRequired,
+  updateInputValue: PropTypes.func.isRequired,
 }
 
-export default App
+export default Search
