@@ -10,30 +10,57 @@ const App = ({
   searchResult,
   loading,
   error,
+  onLoadMore,
 }) =>
-  <div className='center pa3 pa4-l mw7 near-black sans-serif'>
+  <div className='center pa3 pa4-l mb4 mw7 near-black sans-serif'>
     <h1 className='normal mb4'>GitHub Search App</h1>
 
     <input
       type='text'
-      className='ba b--gray br3 pa2 w-100 f6'
+      className='ba b--gray br2 pa2 w-100 f6'
       placeholder='Search Repo...'
       value={inputValue}
       onChange={e => updateInputValue(e.target.value)}
     />
 
     <div className='pt4'>
-      {!loading && searchResult && searchResult.length > 0
+      {/* Results */}
+      {searchResult && !!searchResult.length
         && <React.Fragment>
           <span className='dib gray mb3'>Matches:</span>
-          {searchResult.map(repo => <Repo key={repo.nameWithOwner.replace('/', '__')} {...repo} />)}
+          {searchResult.map(repo =>
+            <div className='mb3'>
+              <Repo key={repo.nameWithOwner.replace('/', '__')} {...repo} />
+            </div>)}
         </React.Fragment>}
 
-      {!loading && !!inputValue.trim() && searchResult && searchResult.length === 0
+      {/* No Match */}
+      {!loading && !!inputValue.trim() && searchResult && !searchResult.length
         && <p className='gray'>Sorry, your search has no match.</p>}
 
+      {/* Error */}
       {error && <p className='light-red'>Sorry, an error encountered: {error.message}</p>}
-      {loading && <ReactLoading className='mt5 center' type='spin' color='#333333' />}
+
+      {/* Load More */}
+      {!loading && !error && onLoadMore &&
+        <button
+          className='button-reset db br2 bn pa2 w-100 bg-dark-gray hover-bg-gray f6 white ttu'
+          onClick={onLoadMore}
+        >
+          Load More
+        </button>}
+
+      {/* No More */}
+      {!loading && !error && !onLoadMore && searchResult && !!searchResult.length &&
+        <button
+          className='button-reset db br2 bn pa2 w-100 bg-gray f6 white ttu'
+          disabled
+        >
+          That's All Folks!
+        </button>}
+
+      {/* Loader */}
+      {loading && <ReactLoading className='mt4 center' type='spin' color='#333333' />}
     </div>
 
     <style jsx>{`
@@ -47,7 +74,7 @@ const App = ({
       :global(p) { margin: 0 }
 
       /* custom styles */
-      input:focus {
+      input:focus, input:hover {
         margin: -1px;
         border-width: 2px;
         outline: none;
@@ -56,13 +83,14 @@ const App = ({
   </div>
 
 App.propTypes = {
+  loading: PropTypes.bool,
+  error: PropTypes.instanceOf(Error),
+  onLoadMore: PropTypes.func,
   inputValue: PropTypes.string.isRequired,
   updateInputValue: PropTypes.func.isRequired,
   searchResult: PropTypes.arrayOf(PropTypes.shape({
     nameWithOwner: PropTypes.string.isRequired,
   })),
-  error: PropTypes.instanceOf(Error),
-  loading: PropTypes.bool.isRequired,
 }
 
 export default App
