@@ -7,6 +7,7 @@ import App from './App'
 const SEARCH_REPO_QUERY = gql`
   query SearchRepoQuery($query: String!, $after: String) {
     search(query: $query, after: $after, type: REPOSITORY, first: 10) {,
+      repositoryCount,
       pageInfo {
         endCursor,
         hasNextPage,
@@ -48,6 +49,7 @@ const AppContainer = compose(
       ownProps: { inputValue }
     }) => ({
       error,
+      repositoryCount: search && search.repositoryCount,
 
       status: (() => {
         switch (networkStatus) {

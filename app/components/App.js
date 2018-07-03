@@ -7,6 +7,7 @@ import Repo from './Repo'
 const App = ({
   inputValue,
   updateInputValue,
+  repositoryCount,
   searchResult,
   status = 'ready',
   error,
@@ -27,7 +28,10 @@ const App = ({
       {/* Results */}
       {searchResult && !!searchResult.length
         && <React.Fragment>
-          <span className='dib gray mb3'>Matches:</span>
+          <div className="cf gray mb3">
+            <div className="fl">Matches:</div>
+            <div className="fr f6">(displaying {searchResult.length} of {repositoryCount})</div>
+          </div>
           {searchResult.map(repo =>
             <div key={repo.nameWithOwner.replace('/', '__')} className='mb3'>
               <Repo {...repo} />
@@ -84,6 +88,7 @@ App.propTypes = {
   onLoadMore: PropTypes.func,
   inputValue: PropTypes.string.isRequired,
   updateInputValue: PropTypes.func.isRequired,
+  repositoryCount: PropTypes.number,
   searchResult: PropTypes.arrayOf(PropTypes.shape({
     nameWithOwner: PropTypes.string.isRequired,
   })),
