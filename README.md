@@ -1,13 +1,20 @@
 # todo
 
 - 404
-- graphql
-  - pagination
-  - input throttling/debounce
-  - maybe improve app's conditional renders
-  - issue: reentering old input loads more than 30 if loaded more before
-- add graph components
-  - add graph about stars, recent update, age, and resolved issues
-  - when repo representation is clicked, scroll to that and highlight the repo
+- add collaboratorsCount in repo component
+- limit candidates to 10
+- add compare page
+  - add simple bar graphs (stars/pull req/watch/collaborator) bar graph
+  - add age graph
+  - add issues graph
+    - open only
+    - closed only
+    - open and closed
+    - ratio
+  - created/last-updated gantt like chart chart
+  - add/remove repo
+  - repo info
+  - handle resize
+  - graph transition in animation
 - add proper README.md (explain original purpose)
 - add it to portfolio

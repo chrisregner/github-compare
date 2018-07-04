@@ -19,5 +19,6 @@ export default handleActions({
 export const toggleCandidate = createAction(TOGGLE_CANDIDATE)
 
 /* Selectors */
+export { getCandidates }
 export const getIds = state => getCandidates(state).map(candidate => candidate.nameWithOwner)
 export const getCount = state => getCandidates(state).length

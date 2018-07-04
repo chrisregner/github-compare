@@ -1,15 +1,17 @@
 import 'tachyons/css/tachyons.min.css' // functional css library: http://tachyons.io
 import React from 'react'
 import { Route } from 'react-router-dom'
-import Search from 'app/sections/SearchContainer'
+import SearchContainer from 'app/sections/SearchContainer'
+import CompareContainer from 'app/sections/CompareContainer'
 import NavContainer from 'app/sections/NavContainer'
 
 const App = () =>
-  <div className='center pa3 pa4-l mb4 mw7 near-black sans-serif'>
-    <h1 className='normal mb3'>GitHub Search App</h1>
+  <div className='pv3 pv4-l mb4 near-black sans-serif'>
+    <h1 className='center mb3 mw7 ph3 ph4-l normal'>GitHub Search App</h1>
 
-    <NavContainer className="mb2" />
-    <Route exact path='/' component={Search} />
+    <NavContainer className="center mb3 mw7 ph3 ph4-l" />
+    <Route exact path='/' component={SearchContainer} />
+    <Route path='/compare' component={CompareContainer} />
 
     <style jsx global>{`
       /* base global styles */

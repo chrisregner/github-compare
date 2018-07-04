@@ -15,7 +15,7 @@ const Search = ({
   toggleCandidate,
   updateInputValue,
 }) =>
-  <div>
+  <div className='center mb3 mw7 ph3 ph4-l'>
     <input
       type='text'
       className='ba b--gray br2 pa2 w-100 f6'
@@ -27,7 +27,7 @@ const Search = ({
     <div className='pt4'>
       {/* Results */}
       {searchResult && !!searchResult.length
-        && <React.Fragment>
+        && <div className='mb4'>
           <div className="cf gray mb3">
             <div className="fl">Matches:</div>
             <div className="fr f6">(displaying {searchResult.length} of {repositoryCount})</div>
@@ -40,7 +40,7 @@ const Search = ({
                 {...repo}
               />
             </div>)}
-        </React.Fragment>}
+        </div>}
 
       {(() => {
         switch (status) {
@@ -54,7 +54,7 @@ const Search = ({
           case 'error':
             return <p className='light-red'>Sorry, an error encountered: {error.message}</p>
           case 'loading':
-            return <ReactLoading className='mt4 center' type='spin' color='#333333' />
+            return <ReactLoading className='center' type='spin' color='#333333' />
           case 'no-match':
             return <p className='gray'>Sorry, your search has no match.</p>
           case 'no-more':

@@ -98,7 +98,7 @@ const Repo = ({
         : <p className='f6 lh-copy gray'>(No description provided)</p>}
     </div>
 
-    <button onClick={toggleCandidate} className={c('bn br2 w2 f6', isAdded ? 'bg-blue' : 'bg-gray')}>
+    <button onClick={toggleCandidate} className={c('bn br2 w2 f5 white', isAdded ? 'bg-blue' : 'bg-gray')}>
       {isAdded ? '-' : '+'}
     </button>
 
