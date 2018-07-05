@@ -38,7 +38,7 @@ const Search = ({
             const isAdded = candidateIds.includes(repo.nameWithOwner)
 
             return <div key={repo.nameWithOwner.replace('/', '__')} className='_repo flex mt3 bl bw1 b--light-silver'>
-              <div className='_repo-details ma3'>
+              <div className='ma3' style={{ flex: 1 }}>
                 <Repo {...repo} />
               </div>
               <button onClick={() => toggleCandidate(repo)} className={c('bn br2 w2 f5 white', isAdded ? 'bg-blue' : 'bg-gray')}>
@@ -91,8 +91,6 @@ const Search = ({
         border-color: #357edd;
         border-width: 3px;
       }
-
-      ._repo-details{ flex: 1; }
     `}</style>
   </div>
 

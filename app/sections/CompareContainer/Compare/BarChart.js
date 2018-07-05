@@ -6,9 +6,9 @@ import withContainerWidth from 'app/utils/withContainerWidth'
 import lighten from 'app/utils/lighten'
 import { compose, withState } from 'recompose'
 
-const HEIGHT = 300
-const HIGHLIGHT_WD = 4
-const MARGIN = { top: 20, bottom: 10, left: 50, right: 0 }
+const HEIGHT = 350
+const HIGHLIGHT_WD = 3
+const MARGIN = { top: 25, bottom: 15, left: 50, right: 0 }
 
 const BarChart = ({
   candidates,
@@ -28,6 +28,7 @@ const BarChart = ({
 
   const svg = ReactFauxDOM.createElement('svg')
 
+  svg.style.setProperty('background', '#fafafa')
   svg.setAttribute('width', '100%')
   svg.setAttribute('height', HEIGHT)
 

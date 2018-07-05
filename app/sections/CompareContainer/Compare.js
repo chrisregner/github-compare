@@ -37,7 +37,10 @@ const Compare = ({ candidates, toggleClickInspect, toggleHoverInspect, inspected
               backgroundColor: c === inspectedCandidate ? lighten(colors[i]) : ''
             }}
             className='no-underline'
-            onClick={() => toggleClickInspect(c.nameWithOwner)}
+            onClick={ev => {
+              ev.preventDefault()
+              toggleClickInspect(c.nameWithOwner)
+            }}
           >
             {c.nameWithOwner}
           </a>
