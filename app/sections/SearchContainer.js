@@ -98,7 +98,7 @@ export default compose(
         }))
         : null,
 
-      searchResult: (networkStatus !== 2 && search)
+      searchResult: (![1, 2].includes(networkStatus) && search)
         ? search.nodes.map(repo => ({
           ...pick(['name', 'nameWithOwner', 'description', 'createdAt', 'updatedAt'], repo),
           githubUrl: repo.url,
