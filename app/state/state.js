@@ -1,8 +1,11 @@
 import { combineReducers } from 'redux'
-import candidates, * as fromRepos from './candidates'
+import candidates from './candidates'
+import ui from './ui'
 
 export default combineReducers({
-  candidates
+  candidates,
+  ui,
 })
 
 export const getCandidates = state => state.candidates
+export const getUi = state => state.ui

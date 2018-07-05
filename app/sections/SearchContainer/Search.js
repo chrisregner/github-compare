@@ -1,8 +1,9 @@
 import 'tachyons/css/tachyons.min.css'
 import React from 'react'
 import PropTypes from 'prop-types'
+import c from 'classnames'
 import ReactLoading from 'react-loading'
-import Repo from './Search/Repo'
+import Repo from 'app/components/Repo'
 
 const Search = ({
   candidateIds,
@@ -18,7 +19,7 @@ const Search = ({
   <div className='center flex-auto flex flex-column ph3 ph4-l mw7 w-100'>
     <input
       type='text'
-      className='ba b--gray br2 pa2 w-100 f6'
+      className='_input ba b--gray br2 pa2 w-100 f6'
       placeholder='Search Repo...'
       value={inputValue}
       onChange={e => updateInputValue(e.target.value)}
@@ -29,17 +30,22 @@ const Search = ({
       {searchResult && !!searchResult.length
         && <React.Fragment>
           <div className="mt4 cf gray">
-            <div className="fl">Matches:</div>
+            <h4 className="fl">Matches:</h4>
             <div className="fr f6">(displaying {searchResult.length} of {repositoryCount})</div>
           </div>
-          {searchResult.map(repo =>
-            <div key={repo.nameWithOwner.replace('/', '__')} className='mt3'>
-              <Repo
-                toggleCandidate={toggleCandidate.bind(null, repo)}
-                isAdded={candidateIds.includes(repo.nameWithOwner)}
-                {...repo}
-              />
-            </div>)}
+
+          {searchResult.map(repo => {
+            const isAdded = candidateIds.includes(repo.nameWithOwner)
+
+            return <div key={repo.nameWithOwner.replace('/', '__')} className='_repo flex mt3 bl bw1 b--light-silver'>
+              <div className='_repo-details ma3'>
+                <Repo {...repo} />
+              </div>
+              <button onClick={() => toggleCandidate(repo)} className={c('bn br2 w2 f5 white', isAdded ? 'bg-blue' : 'bg-gray')}>
+                {isAdded ? '-' : '+'}
+              </button>
+            </div>
+          })}
         </React.Fragment>}
 
       {(() => {
@@ -74,11 +80,19 @@ const Search = ({
 
     <style jsx>{`
       /* custom styles */
-      input:focus, input:hover {
+      ._input:focus, ._input:hover {
         margin: -1px;
         border-width: 2px;
         outline: none;
       }
+
+      ._repo:hover {
+        margin-left: -1px;
+        border-color: #357edd;
+        border-width: 3px;
+      }
+
+      ._repo-details{ flex: 1; }
     `}</style>
   </div>
 
