@@ -16,6 +16,7 @@
       }],
     "no-console": ["error", { "allow": ["warn", "error"] }],
     "object-property-newline": "off",
-    "operator-linebreak": ["error", "before"]
+    "operator-linebreak": ["error", "before"],
+    "react/no-did-update-set-state": "off"
   }
 }

@@ -29,12 +29,12 @@ const Search = ({
       {/* Results */}
       {searchResult && !!searchResult.length
         && <React.Fragment>
-          <div className="mt4 cf gray">
-            <h4 className="fl">Matches:</h4>
-            <div className="fr f6">(displaying {searchResult.length} of {repositoryCount})</div>
+          <div className='mt4 cf gray'>
+            <h4 className='fl'>Matches:</h4>
+            <div className='fr f6'>(displaying {searchResult.length} of {repositoryCount})</div>
           </div>
 
-          {searchResult.map(repo => {
+          {searchResult.map((repo) => {
             const isAdded = candidateIds.includes(repo.nameWithOwner)
 
             return <div key={repo.nameWithOwner.replace('/', '__')} className='_repo flex mt3 bl bw1 b--light-silver'>

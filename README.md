@@ -11,5 +11,6 @@
 - limit candidates to 10
 - handle 0 candidates
 - 404
+- improve bar graphs bar highlight (remove bottom border)
 - add proper README.md (explain original purpose)
 - add it to portfolio

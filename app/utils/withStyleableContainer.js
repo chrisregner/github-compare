@@ -1,6 +1,11 @@
 import React from 'react'
+import PropTypes from 'prop-types'
+import { setPropTypes } from 'recompose'
 
-export default Component => ({ className, ...props }) =>
+const propTypes = { className: PropTypes.string }
+
+export default Component => setPropTypes(propTypes)(({ className, ...props }) =>
   <div className={className}>
     <Component {...props} />
   </div>
+)

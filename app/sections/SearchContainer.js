@@ -53,7 +53,7 @@ export default compose(
 
     props: ({
       data: { error, networkStatus, search, fetchMore, variables },
-      ownProps: { inputValue }
+      ownProps: { inputValue },
     }) => ({
       error,
       repositoryCount: search && search.repositoryCount,
@@ -83,7 +83,7 @@ export default compose(
       })(),
 
       onLoadMore: (search && search.pageInfo.hasNextPage)
-        ? (() => fetchMore({
+        ? () => fetchMore({
           variables: {
             query: inputValue.trim(),
             after: search.pageInfo.endCursor,
@@ -93,9 +93,9 @@ export default compose(
               search: {
                 ...newRes.search,
                 nodes: [...oldRes.search.nodes, ...newRes.search.nodes],
-              }
-            }
-        }))
+              },
+            },
+        })
         : null,
 
       searchResult: (![1, 2].includes(networkStatus) && search)

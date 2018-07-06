@@ -7,33 +7,30 @@ export default (Component) => {
   return class ContainerWidthTracker extends React.Component {
     state = {}
 
-    componentDidMount() {
+    componentDidMount () {
       this.setState({
         propsWhenLastTracked: this.props,
         width: this.containerRef.offsetWidth,
       })
     }
 
-    componentDidUpdate() {
-      if (this.props !== this.state.propsWhenLastTracked) {
+    componentDidUpdate () {
+      if (this.props !== this.state.propsWhenLastTracked)
         this.setState({
           propsWhenLastTracked: this.props,
           width: this.containerRef.offsetWidth,
         })
-      }
     }
 
     setContainerRef = (containerNode) => {
       this.containerRef = containerNode
     }
 
-    render() {
-      const props = this.props === this.state.propsWhenLastTracked
-        ? this.props
-        : this.state.propsWhenLastTracked
-
+    render () {
       return <div ref={this.setContainerRef}>
-        {this.state.width ? <PureComponent {...props} width={this.state.width} /> : null}
+        {this.state.width
+          ? <PureComponent {...this.state.propsWhenLastTracked} width={this.state.width} />
+          : null}
       </div>
     }
   }

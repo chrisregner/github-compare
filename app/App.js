@@ -9,7 +9,7 @@ const App = () =>
   <div className='flex flex-column pv3 pv4-l min-vh-100 near-black sans-serif'>
     <h1 className='center mb3 ph3 ph4-l mw7 w-100 normal'>GitHub Search App</h1>
 
-    <NavContainer className="center mb3 ph3 ph4-l mw7 w-100" />
+    <NavContainer className='center mb3 ph3 ph4-l mw7 w-100' />
 
     <Route exact path='/' component={SearchContainer} />
     <Route path='/compare' component={CompareContainer} />

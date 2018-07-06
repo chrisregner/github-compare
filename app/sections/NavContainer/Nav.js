@@ -4,10 +4,10 @@ import { Link } from 'react-router-dom'
 
 const Nav = ({ candidatesCount, currentPathname }) =>
   <div className='gray f6'>
-    <Link to='/' className={currentPathname === '/' ? 'blue b' : 'gray'}>
+    <Link to='/' className={currentPathname === '/' ? 'blue' : 'gray'}>
       Search
     </Link> |&ensp;
-    <Link to='/compare' className={currentPathname === '/compare' ? 'blue b' : 'gray'}>
+    <Link to='/compare' className={currentPathname === '/compare' ? 'blue' : 'gray'}>
       Compare ({candidatesCount})
     </Link>
   </div>
