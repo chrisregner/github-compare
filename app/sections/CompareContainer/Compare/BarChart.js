@@ -15,35 +15,6 @@ const BAR_PADDING = 0.3
 const HIGHLIGHT_SIZE = 5
 const DURATION = 500
 
-const BarChart = ({
-  chart,
-  propName,
-}) =>
-  <div>
-    <h2 className='mb3 f3 tc'>{propName} Count</h2>
-    {chart}
-  </div>
-
-const withLifecycle = lifecycle({
-  componentDidMount: function () {
-    drawChart(this)
-    this.updateHighlight = () => updateHighlight(this)
-  },
-
-  componentDidUpdate: function (prevProps) {
-    // TODO: handle width changes
-
-    // If candidates has changed...
-    if (prevProps.candidates !== this.props.candidates)
-      drawChart(this)
-
-    // Else, if inspected candidate has changed and the chart is NOT animating
-    // (highlight would be automatically updated every time an animation finishes)
-    else if ((prevProps.inspectedCandidateId !== this.props.inspectedCandidateId) && !this.t)
-      this.updateHighlight()
-  },
-})
-
 const drawChart = (inst) => {
   const {
     animateFauxDOM,
@@ -205,7 +176,7 @@ const updateHighlight = (inst) => {
   // Highlight the inspected candidate (if not highlighted yet)
   const toHighlightSel = candidatesSel.filter(d => d.id === inspectedCandidateId)
 
-  if (!toHighlightSel.classed('candidate--highlighted')) {
+  if (toHighlightSel.size() && !toHighlightSel.classed('candidate--highlighted')) {
     const innerHt = inst.innerHt
     const barWd = inst.barWd
     const x = inst.x
@@ -257,6 +228,15 @@ const removeHighlight = (selection) => {
     .style('font-size', '.75em')
 }
 
+const BarChart = ({
+  chart,
+  propName,
+}) =>
+  <div>
+    <h2 className='mb3 f3 tc'>{propName} Count</h2>
+    {chart}
+  </div>
+
 BarChart.propTypes = {
   animateFauxDOM: PropTypes.func.isRequired,
   candidates: PropTypes.arrayOf(PropTypes.shape({
@@ -278,5 +258,24 @@ export default compose(
   withStyleableContainer,
   withContainerWidth,
   withFauxDOM,
-  withLifecycle,
+
+  lifecycle({
+    componentDidMount: function () {
+      drawChart(this)
+      this.updateHighlight = () => updateHighlight(this)
+    },
+
+    componentDidUpdate: function (prevProps) {
+      // TODO: handle width changes
+
+      // If candidates has changed...
+      if (prevProps.candidates !== this.props.candidates)
+        drawChart(this)
+
+      // Else, if inspected candidate has changed and the chart is NOT animating
+      // (highlight would be automatically updated every time an animation finishes)
+      else if ((prevProps.inspectedCandidateId !== this.props.inspectedCandidateId) && !this.t)
+        this.updateHighlight()
+    },
+  }),
 )(BarChart)
