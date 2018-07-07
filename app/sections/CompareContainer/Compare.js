@@ -3,30 +3,9 @@ import PropTypes from 'prop-types'
 import * as d3 from 'd3'
 import lighten from 'app/utils/lighten'
 import BarChart from './Compare/BarChart'
+import PieChart from './Compare/PieChart'
 import Repo from 'app/components/Repo'
 import * as R from 'ramda'
-
-const COLORS = d3.schemeCategory10
-const TYPE_NAME_SYMB = Symbol('Pretty name for propToName objects (properties for ALL_PROP_TO_NAME)')
-const ALL_PROP_TO_NAME = {
-  int: {
-    [TYPE_NAME_SYMB]: 'Bar Graphs',
-    stargazerCount: 'Stars',
-    forkCount: 'Forks',
-    openIssueCount: 'Open Issues',
-    watcherCount: 'Watchers',
-  },
-  date: {
-    [TYPE_NAME_SYMB]: 'Timeline Graphs',
-    createdAt: 'Creation Date',
-    updatedAt: 'Update Date',
-  },
-  special: {
-    [TYPE_NAME_SYMB]: 'Specialized Graphs',
-    ageGraph: 'Age Graph',
-    issuesGraph: 'Issues Graph',
-  },
-}
 
 const Compare = (props) => {
   const {
@@ -46,33 +25,46 @@ const Compare = (props) => {
 
   return <div className='center mb4 w-100'>
     <div className='center mt3 ph3 ph4-l mw7 gray'>
-      <h4 className='mb2 f5'>Bar Graphs</h4>
-      {Object.entries(ALL_PROP_TO_NAME.int).map(([prop, name], i) =>
-        <button
-          key={prop}
-          value={prop}
-          className={`bn br2 mr2 pa1 f6 white${prop === graphType ? ' bg-blue' : ' bg-gray'}`}
-          onClick={(ev) => {
-            ev.preventDefault()
-            setGraphType(prop)
-          }}
-        >
-          {name}
-        </button>
-      )}
+      <div className='flex nl2 nr2'>
+        {Object.entries(CHART_TYPES).map(([chartType, keys]) =>
+          <div className='ph2' key={chartType}>
+            <h4 className='mb2 f5'>{chartType}</h4>
+            {Object.entries(keys).map(([key, prettyName], i) =>
+              <button
+                key={key}
+                value={key}
+                className={`bn br2 mr2 pa1 f6 white${key === graphType ? ' bg-blue' : ' bg-gray'}`}
+                onClick={(ev) => {
+                  ev.preventDefault()
+                  setGraphType(key)
+                }}
+              >
+                {prettyName}
+              </button>
+            )}
+          </div>
+        )}
+      </div>
     </div>
 
-    {(() => {
-      switch (getTypeFromProp(graphType)) {
-        case 'int':
-          return <BarChart
-            className='center mt4 ph3 ph4-l mw8'
-            propName={getNameFromProp(graphType)}
-            inspectedCandidateId={inspectedCandidate && inspectedCandidate.nameWithOwner}
-            candidates={specializeCandsMem(props)}
-          />
-      }
-    })()}
+    <div className="center mt4 ph3 ph4-l mw8">
+      {(() => {
+        switch (getTypeNameFromKey(graphType)) {
+          case 'Bar Charts':
+            return <BarChart
+              dataKeyName={getKeyNameFromKey(graphType)}
+              inspectedCandidateId={inspectedCandidate && inspectedCandidate.nameWithOwner}
+              candidates={cachedSpecializeData(props)}
+            />
+          case 'Pie Charts':
+            return <PieChart
+              dataKeyName={getKeyNameFromKey(graphType)}
+              inspectedCandidateId={inspectedCandidate && inspectedCandidate.nameWithOwner}
+              candidates={cachedSpecializeData(props)}
+            />
+        }
+      })()}
+    </div>
 
     <div className='center mt3 ph3 ph4-l mw7 lh-title'>
       <h4 className='mb2 gray'>Candidates:</h4>
@@ -82,8 +74,8 @@ const Compare = (props) => {
           <a
             href='#'
             style={{
-              color: COLORS[i],
-              backgroundColor: c === inspectedCandidate ? lighten(COLORS[i]) : '',
+              color: colors[i],
+              backgroundColor: c === inspectedCandidate ? lighten(colors[i]) : '',
             }}
             className='no-underline'
             onClick={(ev) => {
@@ -100,7 +92,7 @@ const Compare = (props) => {
     {inspectedCandidate && <div className='center mt4 ph3 ph4-l mw7'>
       <div
         className='bl bw2 pa3'
-        style={{ borderColor: COLORS[candidates.findIndex(c => c === inspectedCandidate)] }}
+        style={{ borderColor: colors[candidates.findIndex(c => c === inspectedCandidate)] }}
       >
         <Repo {...inspectedCandidate} />
       </div>
@@ -108,39 +100,51 @@ const Compare = (props) => {
   </div>
 }
 
+const colors = d3.schemeCategory10.map(lighten(0.0375))
+colors[8] = '#ffd43b'
+
+const CHART_TYPES = {
+  'Bar Charts': {
+    stargazerCount: 'Stars',
+    forkCount: 'Forks',
+    openIssueCount: 'Open Issues',
+    watcherCount: 'Watchers',
+  },
+  'Timeline Charts': {
+    age: 'Age (Creation/Update)',
+  },
+  'Pie Charts': {
+    pullReq: 'Pull Requests',
+    issue: 'Issues',
+  },
+}
+
 const specializeCands = ({ candidates, graphType, toggleClickInspect, toggleHoverInspect }) =>
   candidates
     .map((c, i) => ({
       id: c.nameWithOwner,
       value: c[graphType],
-      color: COLORS[i],
+      color: colors[i],
       toggleClickInspect: () => toggleClickInspect(c.nameWithOwner),
       toggleHoverInspect: () => toggleHoverInspect(c.nameWithOwner),
     }))
     .sort((a, b) => a.value < b.value)
 
-const specializeCandsMem = R.memoizeWith(
+const cachedSpecializeData = R.memoizeWith(
   ({ candidates, graphType }) => JSON.stringify(candidates) + graphType,
   specializeCands)
 
-const getTypeFromProp = prop =>
-  Object.entries(ALL_PROP_TO_NAME)
+const getTypeNameFromKey = prop =>
+  Object.entries(CHART_TYPES)
     .find(([type, propToName]) =>
       Object.keys(propToName).includes(prop)
     )[0]
 
-// TODO: use or remove
-// const getTypeNameFromProp = prop =>
-//   Object.entries(ALL_PROP_TO_NAME)
-//     .find(([type, propToName]) =>
-//       Object.keys(propToName).includes(prop)
-//     )[1][TYPE_NAME_SYMB]
-
-const getNameFromProp = (prop) => {
-  for (let type in ALL_PROP_TO_NAME)
-    for (let innerProp in ALL_PROP_TO_NAME[type])
+const getKeyNameFromKey = (prop) => {
+  for (let type in CHART_TYPES)
+    for (let innerProp in CHART_TYPES[type])
       if (innerProp === prop)
-        return ALL_PROP_TO_NAME[type][innerProp]
+        return CHART_TYPES[type][innerProp]
 }
 
 Compare.propTypes = {

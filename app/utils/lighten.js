@@ -1,7 +1,8 @@
 import * as d3 from 'd3'
+import * as R from 'ramda'
 
-export default (color) => {
+export default R.curryN(2, (delta, color) => {
   const c = d3.hsl(color)
-  c.l += 0.25
+  c.l += (delta)
   return c.hex()
-}
+})

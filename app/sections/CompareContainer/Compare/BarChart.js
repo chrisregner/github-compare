@@ -187,7 +187,7 @@ const updateHighlight = (inst) => {
 
     toHighlightSel.insert('rect', ':first-child')
       .attr('class', 'highlight')
-      .attr('fill', d => lighten(d.color))
+      .attr('fill', d => lighten(.125, d.color))
       .attr('rx', HIGHLIGHT_SIZE)
       .attr('ry', HIGHLIGHT_SIZE)
       .attr('height', d => innerHt - y(d.value))
@@ -230,10 +230,10 @@ const removeHighlight = (selection) => {
 
 const BarChart = ({
   chart,
-  propName,
+  dataKeyName,
 }) =>
   <div>
-    <h2 className='mb3 f3 tc'>{propName} Count</h2>
+    <h2 className='mb3 f3 tc'>{dataKeyName} Count</h2>
     {chart}
   </div>
 
@@ -250,7 +250,7 @@ BarChart.propTypes = {
   connectFauxDOM: PropTypes.func.isRequired,
   drawFauxDOM: PropTypes.func.isRequired,
   inspectedCandidateId: PropTypes.string,
-  propName: PropTypes.string.isRequired,
+  dataKeyName: PropTypes.string.isRequired,
   width: PropTypes.number.isRequired,
 }
 
