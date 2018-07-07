@@ -1,19 +1,42 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import d3 from 'app/services/d3'
+import * as d3 from 'd3'
 import lighten from 'app/utils/lighten'
 import BarChart from './Compare/BarChart'
 import Repo from 'app/components/Repo'
+import * as R from 'ramda'
 
-const colors = d3.schemeCategory10
-const Compare = ({
-  candidates,
-  toggleClickInspect,
-  toggleHoverInspect,
-  inspectedCandidate,
-  graphType,
-  setGraphType,
-}) => {
+const COLORS = d3.schemeCategory10
+const TYPE_NAME_SYMB = Symbol('Pretty name for propToName objects (properties for ALL_PROP_TO_NAME)')
+const ALL_PROP_TO_NAME = {
+  int: {
+    [TYPE_NAME_SYMB]: 'Bar Graphs',
+    stargazerCount: 'Stars',
+    forkCount: 'Forks',
+    openIssueCount: 'Open Issues',
+    watcherCount: 'Watchers',
+  },
+  date: {
+    [TYPE_NAME_SYMB]: 'Timeline Graphs',
+    createdAt: 'Creation Date',
+    updatedAt: 'Update Date',
+  },
+  special: {
+    [TYPE_NAME_SYMB]: 'Specialized Graphs',
+    ageGraph: 'Age Graph',
+    issuesGraph: 'Issues Graph',
+  },
+}
+
+const Compare = (props) => {
+  const {
+    candidates,
+    toggleClickInspect,
+    inspectedCandidate,
+    graphType,
+    setGraphType,
+  } = props
+
   if (!candidates.length)
     return <div className='center mb4 w-100'>
       <div className='center mt2 ph3 ph4-l mw7 gray'>
@@ -28,7 +51,7 @@ const Compare = ({
         <button
           key={prop}
           value={prop}
-          className={`bn br3 mr2 pa1 f6 white${prop === graphType ? ' bg-blue' : ' bg-gray'}`}
+          className={`bn br2 mr2 pa1 f6 white${prop === graphType ? ' bg-blue' : ' bg-gray'}`}
           onClick={(ev) => {
             ev.preventDefault()
             setGraphType(prop)
@@ -46,17 +69,7 @@ const Compare = ({
             className='center mt4 ph3 ph4-l mw8'
             propName={getNameFromProp(graphType)}
             inspectedCandidateId={inspectedCandidate && inspectedCandidate.nameWithOwner}
-            candidates={
-              candidates
-                .map((c, i) => ({
-                  id: c.nameWithOwner,
-                  value: c[graphType],
-                  color: colors[i],
-                  toggleClickInspect: () => toggleClickInspect(c.nameWithOwner),
-                  toggleHoverInspect: () => toggleHoverInspect(c.nameWithOwner),
-                }))
-                .sort((a, b) => a.value < b.value)
-            }
+            candidates={specializeCandsMem(props)}
           />
       }
     })()}
@@ -69,8 +82,8 @@ const Compare = ({
           <a
             href='#'
             style={{
-              color: colors[i],
-              backgroundColor: c === inspectedCandidate ? lighten(colors[i]) : '',
+              color: COLORS[i],
+              backgroundColor: c === inspectedCandidate ? lighten(COLORS[i]) : '',
             }}
             className='no-underline'
             onClick={(ev) => {
@@ -87,7 +100,7 @@ const Compare = ({
     {inspectedCandidate && <div className='center mt4 ph3 ph4-l mw7'>
       <div
         className='bl bw2 pa3'
-        style={{ borderColor: colors[candidates.findIndex(c => c === inspectedCandidate)] }}
+        style={{ borderColor: COLORS[candidates.findIndex(c => c === inspectedCandidate)] }}
       >
         <Repo {...inspectedCandidate} />
       </div>
@@ -95,26 +108,20 @@ const Compare = ({
   </div>
 }
 
-const typeNameSymb = Symbol('Pretty name for propToName objects (properties for ALL_PROP_TO_NAME)')
-const ALL_PROP_TO_NAME = {
-  int: {
-    [typeNameSymb]: 'Bar Graphs',
-    forkCount: 'Forks',
-    openIssueCount: 'Open Issues',
-    stargazerCount: 'Stars',
-    watcherCount: 'Watchers',
-  },
-  date: {
-    [typeNameSymb]: 'Timeline Graphs',
-    createdAt: 'Creation Date',
-    updatedAt: 'Update Date',
-  },
-  special: {
-    [typeNameSymb]: 'Specialized Graphs',
-    ageGraph: 'Age Graph',
-    issuesGraph: 'Issues Graph',
-  },
-}
+const specializeCands = ({ candidates, graphType, toggleClickInspect, toggleHoverInspect }) =>
+  candidates
+    .map((c, i) => ({
+      id: c.nameWithOwner,
+      value: c[graphType],
+      color: COLORS[i],
+      toggleClickInspect: () => toggleClickInspect(c.nameWithOwner),
+      toggleHoverInspect: () => toggleHoverInspect(c.nameWithOwner),
+    }))
+    .sort((a, b) => a.value < b.value)
+
+const specializeCandsMem = R.memoizeWith(
+  ({ candidates, graphType }) => JSON.stringify(candidates) + graphType,
+  specializeCands)
 
 const getTypeFromProp = prop =>
   Object.entries(ALL_PROP_TO_NAME)
@@ -127,7 +134,7 @@ const getTypeFromProp = prop =>
 //   Object.entries(ALL_PROP_TO_NAME)
 //     .find(([type, propToName]) =>
 //       Object.keys(propToName).includes(prop)
-//     )[1][typeNameSymb]
+//     )[1][TYPE_NAME_SYMB]
 
 const getNameFromProp = (prop) => {
   for (let type in ALL_PROP_TO_NAME)

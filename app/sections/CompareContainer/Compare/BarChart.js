@@ -3,15 +3,17 @@
 import React from 'react'
 import { withFauxDOM } from 'react-faux-dom'
 import PropTypes from 'prop-types'
-import d3 from 'app/services/d3'
+import * as d3 from 'd3'
 import withContainerWidth from 'app/utils/withContainerWidth'
 import withStyleableContainer from 'app/utils/withStyleableContainer'
 import lighten from 'app/utils/lighten'
 import { compose, lifecycle } from 'recompose'
 
 const HEIGHT = 400
-const HIGHLIGHT_SIZE = 3
-const MARGIN = { top: 25, bottom: 15, left: 50, right: 0 }
+const MARGIN = { top: 25, bottom: 10, left: 50, right: 0 }
+const BAR_PADDING = 0.3
+const HIGHLIGHT_SIZE = 5
+const DURATION = 500
 
 const BarChart = ({
   chart,
@@ -24,33 +26,34 @@ const BarChart = ({
 
 const withLifecycle = lifecycle({
   componentDidMount: function () {
-    renderD3(this.props, this)
-    updateHighlight(this.props, this)
-    // this.props.drawFauxDOM()
+    drawChart(this)
+    this.updateHighlight = () => updateHighlight(this)
   },
 
   componentDidUpdate: function (prevProps) {
     // TODO: handle width changes
 
-    if (prevProps.candidates !== this.props.candidates) {
-      updateCandidates(this.props, this)
-      updateHighlight(this.props, this)
-      this.props.drawFauxDOM()
-    } else if (prevProps.inspectedCandidateId !== this.props.inspectedCandidateId) {
-      updateHighlight(this.props, this)
-      this.props.drawFauxDOM()
-    }
+    // If candidates has changed...
+    if (prevProps.candidates !== this.props.candidates)
+      drawChart(this)
+
+    // Else, if inspected candidate has changed and the chart is NOT animating
+    // (highlight would be automatically updated every time an animation finishes)
+    else if ((prevProps.inspectedCandidateId !== this.props.inspectedCandidateId) && !this.t)
+      this.updateHighlight()
   },
 })
 
-const renderD3 = ({
-  candidates,
-  connectFauxDOM,
-  inspectedCandidateId,
-  width,
-}, that) => {
+const drawChart = (inst) => {
+  const {
+    animateFauxDOM,
+    candidates,
+    connectFauxDOM,
+    width,
+  } = inst.props
+
   const innerWd = width - (MARGIN.left + MARGIN.right)
-  const innerHt = HEIGHT - (MARGIN.top + MARGIN.bottom)
+  const innerHt = inst.innerHt || (HEIGHT - (MARGIN.top + MARGIN.bottom))
   const highestValue = candidates.reduce((acc, c) =>
     Math.max(acc, c.value), 0)
   const x = d3.scaleBand()
@@ -60,154 +63,202 @@ const renderD3 = ({
     .domain([0, highestValue])
     .rangeRound([innerHt, 0])
   const svg = connectFauxDOM('svg', 'chart')
-  const barWd = (innerWd / 10) * 0.80
+  const barWd = (innerWd / 10) * (1 - BAR_PADDING)
+  let t, axisYSel, candidatesSel, barsTrans, titlesSel, valuesSel
+
+  // If this is first render...
+  if (!inst.hasRendered) {
+    // Setup SVG
+    svg.setAttribute('width', '100%')
+    svg.setAttribute('height', HEIGHT)
+
+    // Add the main wrapper
+    const wrapperSel = d3.select(svg)
+      .append('g')
+      .attr('transform', 'translate(' + MARGIN.left + ',' + MARGIN.top + ')')
+
+    // Add y axis element
+    axisYSel = wrapperSel.append('g')
+      .attr('class', 'axis-y')
+
+    // Add candidate groups element; enter data
+    candidatesSel = wrapperSel.append('g')
+      .selectAll('g')
+      .data(candidates)
+      .enter()
+      .append('g')
+      .attr('class', 'candidate')
+      .on('click', d => d.toggleClickInspect())
+      .on('mouseenter', d => d.toggleHoverInspect())
+      .on('mouseleave', d => d.toggleHoverInspect())
+
+    // Create transition instance
+    t = candidatesSel.transition()
+      .duration(DURATION)
+      .on('end', () => {
+        delete inst.t
+        inst.updateHighlight()
+      })
+
+    // Add the bar elements; set properties unique to first render; get its transition instance
+    barsTrans = candidatesSel.append('rect')
+      .attr('class', 'bar')
+      .attr('width', barWd)
+      .attr('height', 0)
+      .attr('x', d => x(d.id) + (x.bandwidth() / 2) - (barWd / 2))
+      .attr('y', innerHt)
+      .attr('fill', d => d.color)
+      .transition(t)
+
+    // Add the tooltip elements
+    titlesSel = candidatesSel.append('title')
+
+    // Add the values elements
+    valuesSel = candidatesSel.append('text')
+      .style('font-size', '.75em')
+      .attr('fill', '#888')
+      .attr('alignment-baseline', 'baseline')
+      .attr('text-anchor', 'middle')
+      .attr('x', d => x(d.id) + (x.bandwidth() / 2))
+      .attr('y', innerHt - 15)
+
+    // Flag the first render for future reference
+    inst.hasRendered = true
+
+  // Else, if this is an update rather than first render...
+  } else {
+    // Select elements; enter candidates data
+    axisYSel = d3.select(svg).select('.axis-y')
+    candidatesSel = d3.select(svg)
+      .selectAll('.candidate')
+      .data(candidates) // data should be updated before selecting its descendants
+    titlesSel = candidatesSel.select('title')
+    valuesSel = candidatesSel.select('text')
+
+    // Get bar transition instance
+    barsTrans = candidatesSel.select('.bar').transition(t)
+
+    // Create transition instance
+    t = candidatesSel.transition()
+      .duration(DURATION)
+      .on('end', () => {
+        delete inst.t
+        inst.updateHighlight()
+      })
+
+    // Get bars transition instance; do updates/animations that are unique to update scenario
+    barsTrans = candidatesSel.select('.bar')
+      .transition(t)
+      .attr('fill', d => d.color)
+      .attr('width', barWd)
+  }
+
+  // Update y axis
+  axisYSel.call(d3.axisLeft(y))
+
+  // Remove highlights
+  removeHighlight(candidatesSel)
+
+  // Do bars updates/animations that are common to both first render and update scenario
+  barsTrans
+    .attr('height', d => innerHt - y(d.value))
+    .attr('y', d => y(d.value))
+
+  // Update the candidate tooltip
+  titlesSel.text(d => `${d.id} (click to inspect)`)
+
+  // Update/animate the values
+  valuesSel
+    .text(d => d.value)
+    .transition(t)
+    .attr('y', d => y(d.value) - 5)
 
   // Save stuffs that will be used by other functions
-  that.innerWd = innerWd
-  that.innerHt = innerHt
-  that.x = x
-  that.y = y
-  that.barWd = barWd
+  inst.innerHt = innerHt
+  inst.x = x
+  inst.y = y
+  inst.barWd = barWd
+  inst.t = t
 
-  // Setup SVG
-  svg.style.setProperty('background', '#fafafa')
-  svg.setAttribute('width', '100%')
-  svg.setAttribute('height', HEIGHT)
-
-  // Add the main wrapper
-  const wrapperSel = d3.select(svg)
-    .append('g')
-    .attr('transform', 'translate(' + MARGIN.left + ',' + MARGIN.top + ')')
-
-  // Add y axis
-  wrapperSel.append('g')
-    .attr('class', 'axis-y')
-    .call(d3.axisLeft(y))
-
-  // Add candidate groups
-  const candidatesSel = wrapperSel.append('g')
-    .selectAll('g')
-    .data(candidates)
-    .enter()
-    .append('g')
-    .attr('class', 'candidate')
-    .on('click', d => d.toggleClickInspect())
-    .on('mouseover', d => d.toggleHoverInspect())
-    .on('mouseout', d => d.toggleHoverInspect())
-
-  // Add the candidate bars
-  candidatesSel.append('rect')
-    .attr('class', 'bar')
-    .attr('width', barWd)
-    .attr('height', d => innerHt - y(d.value))
-    .attr('x', d => x(d.id) + (x.bandwidth() / 2) - (barWd / 2))
-    .attr('y', d => y(d.value))
-    .attr('fill', d => d.color)
-
-  // Add the candidate tooltip
-  candidatesSel.append('title')
-    .text(d => `${d.id} (click to inspect)`)
-
-  // Add the candidate text (the value above the bar)
-  candidatesSel.append('text')
-    .text(d => d.value)
-    .attr('class', 'f7')
-    .attr('text-anchor', 'middle')
-    .attr('x', d => x(d.id) + (x.bandwidth() / 2))
-    .attr('y', d => y(d.value) - 5)
+  // Animate changes to React
+  animateFauxDOM(1000)
 }
 
-const updateHighlight = ({
-  connectFauxDOM,
-  inspectedCandidateId,
-  drawFauxDOM,
-}, that) => {
+const updateHighlight = (inst) => {
+  const {
+    connectFauxDOM,
+    animateFauxDOM,
+    inspectedCandidateId,
+  } = inst.props
+
+  const svgSel = d3.select(connectFauxDOM('svg', 'chart'))
   const candidatesSel = d3.select(connectFauxDOM('svg', 'chart'))
     .selectAll('.candidate')
 
-  // Update text highligh styles
-  candidatesSel.selectAll('text')
-    .attr('fill', d =>
-      (d.id === inspectedCandidateId) ? '#333' : '#888')
-    .style('font-weight', d =>
-      (d.id === inspectedCandidateId) ? 'bold' : 'normal')
+  // Remove highlight of any candidate that shouldn't be highlighted
+  removeHighlight(
+    svgSel
+      .select('.candidate--highlighted')
+      .filter(d => d.id !== inspectedCandidateId)
+  )
 
-  // Remove any highlight rects for unhighlighted candidates
-  candidatesSel.filter(d => d.id !== inspectedCandidateId)
-    .selectAll('.highlight')
-    .remove()
+  // Highlight the inspected candidate (if not highlighted yet)
+  const toHighlightSel = candidatesSel.filter(d => d.id === inspectedCandidateId)
 
-  const innerHt = that.innerHt
-  const barWd = that.barWd
-  const x = that.x
-  const y = that.y
-  const candToHighlight = candidatesSel.filter(d => d.id === inspectedCandidateId)
+  if (!toHighlightSel.classed('candidate--highlighted')) {
+    const innerHt = inst.innerHt
+    const barWd = inst.barWd
+    const x = inst.x
+    const y = inst.y
 
-  // if highlighted candidate don't have it yet, add the highlight rect
-  if (candToHighlight.selectAll('.highlight').empty())
-    candToHighlight
-      .append('rect')
+    toHighlightSel
+      .classed('candidate--highlighted', true)
+
+    toHighlightSel.insert('rect', ':first-child')
       .attr('class', 'highlight')
-      .attr('fill', 'none')
-      .attr('width', barWd + (HIGHLIGHT_SIZE))
-      .attr('height', d => innerHt - y(d.value) + (HIGHLIGHT_SIZE))
-      .attr('x', d => x(d.id) + (x.bandwidth() / 2) - (barWd / 2) - HIGHLIGHT_SIZE / 2)
-      .attr('y', d => y(d.value) - HIGHLIGHT_SIZE / 2)
-      .attr('stroke-width', HIGHLIGHT_SIZE)
+      .attr('fill', d => lighten(d.color))
       .attr('rx', HIGHLIGHT_SIZE)
       .attr('ry', HIGHLIGHT_SIZE)
-      .attr('stroke', d => lighten(d.color))
+      .attr('height', d => innerHt - y(d.value))
+      .attr('width', barWd)
+      .attr('x', d => x(d.id) + (x.bandwidth() / 2) - (barWd / 2))
+      .attr('y', d => y(d.value))
+      .transition()
+      .duration(DURATION)
+      .attr('height', d => innerHt - y(d.value) + (HIGHLIGHT_SIZE * 2))
+      .attr('width', barWd + (HIGHLIGHT_SIZE * 2))
+      .attr('x', d => x(d.id) + (x.bandwidth() / 2) - (barWd / 2) - HIGHLIGHT_SIZE)
+      .attr('y', d => y(d.value) - HIGHLIGHT_SIZE)
+
+    toHighlightSel.select('text')
+      .transition()
+      .duration(DURATION)
+      .attr('fill', '#333')
+      .style('font-weight', '700')
+      .style('font-size', '.9em')
+  }
+
+  animateFauxDOM(DURATION)
 }
 
-const updateCandidates = ({
-  candidates,
-  connectFauxDOM,
-  inspectedCandidateId,
-  width,
-}, that) => {
-  const innerWd = that.innerWd
-  const innerHt = that.innerHt
-  const barWd = that.barWd
-  const highestValue = candidates.reduce((acc, c) =>
-    Math.max(acc, c.value), 0)
-  const x = d3.scaleBand()
-    .domain(candidates.map(c => c.id))
-    .rangeRound([0, innerWd])
-  const y = d3.scaleLinear()
-    .domain([0, highestValue])
-    .rangeRound([innerHt, 0])
-  const svgSel = d3.select(connectFauxDOM('svg', 'chart'))
+const removeHighlight = (selection) => {
+  selection
+    .classed('candidate--highlighted', false)
 
-  // Save stuffs that will be used by other functions
-  that.x = x
-  that.y = y
+  selection
+    .select('.highlight')
+    .remove()
 
-  // Update new y axis
-  svgSel.select('.axis-y')
-    .call(d3.axisLeft(y))
-
-  // Update the candidate data
-  const candidatesSel = svgSel.selectAll('.candidate')
-    .data(candidates)
-
-  // Update the candidate bars
-  candidatesSel.select('.bar')
-    .attr('x', d => x(d.id) + (x.bandwidth() / 2) - (barWd / 2))
-    .attr('y', d => y(d.value))
-    .attr('fill', d => d.color)
-    .attr('width', barWd)
-    .attr('height', d => innerHt - y(d.value))
-
-  // Update the candidate text (the value above the bar)
-  candidatesSel.select('text')
-    .text(d => d.value)
-    .attr('class', 'f7')
-    .attr('text-anchor', 'middle')
-    .attr('x', d => x(d.id) + (x.bandwidth() / 2))
-    .attr('y', d => y(d.value) - 5)
+  selection
+    .select('text')
+    .interrupt()
+    .attr('fill', '#888')
+    .style('font-weight', '500')
+    .style('font-size', '.75em')
 }
 
 BarChart.propTypes = {
+  animateFauxDOM: PropTypes.func.isRequired,
   candidates: PropTypes.arrayOf(PropTypes.shape({
     color: PropTypes.string.isRequired,
     id: PropTypes.string.isRequired,

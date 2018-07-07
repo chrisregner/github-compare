@@ -13,6 +13,6 @@ export default compose(
     { toggleClickInspect, toggleHoverInspect },
   ),
 
-  // TODO: move this to redux
+  // TODO: move this to redux?
   withState('graphType', 'setGraphType', 'stargazerCount'),
 )(Compare)
