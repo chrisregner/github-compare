@@ -47,7 +47,7 @@ const Compare = (props) => {
       </div>
     </div>
 
-    <div className="center mt4 ph3 ph4-l mw8">
+    <div className='center mt4 ph3 ph4-l mw8'>
       {(() => {
         switch (getTypeNameFromKey(graphType)) {
           case 'Bar Charts':
@@ -134,7 +134,7 @@ const cachedSpecializeData = R.memoizeWith(
   ({ candidates, graphType }) => JSON.stringify(candidates) + graphType,
   specializeCands)
 
-const getTypeNameFromKey = key => {
+const getTypeNameFromKey = (key) => {
   for (let typeName in CHART_TYPES)
     for (let keyName in CHART_TYPES[typeName])
       if (String(CHART_TYPES[typeName][keyName]) === String(key))

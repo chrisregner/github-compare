@@ -98,6 +98,9 @@ const drawChart = (inst) => {
 
   // Else, if this is an update rather than first render...
   } else {
+    // Remove highlights
+    removeHighlight(inst, true)
+
     // Select elements; enter candidates data
     axisYSel = d3.select(svg).select('.axis-y')
     candidatesSel = d3.select(svg)
@@ -126,9 +129,6 @@ const drawChart = (inst) => {
 
   // Update y axis
   axisYSel.call(d3.axisLeft(y))
-
-  // Remove highlights
-  removeHighlight(candidatesSel)
 
   // Do bars updates/animations that are common to both first render and update scenario
   barsTrans
@@ -162,21 +162,15 @@ const updateHighlight = (inst) => {
     inspectedCandidateId,
   } = inst.props
 
-  const svgSel = d3.select(connectFauxDOM('svg', 'chart'))
-  const candidatesSel = d3.select(connectFauxDOM('svg', 'chart'))
-    .selectAll('.candidate')
-
   // Remove highlight of any candidate that shouldn't be highlighted
-  removeHighlight(
-    svgSel
-      .select('.candidate--highlighted')
-      .filter(d => d.id !== inspectedCandidateId)
-  )
+  removeHighlight(inst)
 
   // Highlight the inspected candidate (if not highlighted yet)
-  const toHighlightSel = candidatesSel.filter(d => d.id === inspectedCandidateId)
+  const toHighlightSel = d3.select(connectFauxDOM('svg', 'chart'))
+    .selectAll('.candidate:not(.candidate--highlighted)')
+    .filter(d => d.id === inspectedCandidateId)
 
-  if (toHighlightSel.size() && !toHighlightSel.classed('candidate--highlighted')) {
+  if (toHighlightSel.size()) {
     const innerHt = inst.innerHt
     const barWd = inst.barWd
     const x = inst.x
@@ -187,7 +181,7 @@ const updateHighlight = (inst) => {
 
     toHighlightSel.insert('rect', ':first-child')
       .attr('class', 'highlight')
-      .attr('fill', d => lighten(.125, d.color))
+      .attr('fill', d => lighten(0.125, d.color))
       .attr('rx', HIGHLIGHT_SIZE)
       .attr('ry', HIGHLIGHT_SIZE)
       .attr('height', d => innerHt - y(d.value))
@@ -205,6 +199,7 @@ const updateHighlight = (inst) => {
       .transition()
       .duration(DURATION)
       .attr('fill', '#333')
+      .attr('y', d => y(d.value) - 10)
       .style('font-weight', '700')
       .style('font-size', '.9em')
   }
@@ -212,20 +207,35 @@ const updateHighlight = (inst) => {
   animateFauxDOM(DURATION)
 }
 
-const removeHighlight = (selection) => {
-  selection
-    .classed('candidate--highlighted', false)
+const removeHighlight = (inst, shouldRemoveAll) => {
+  const {
+    connectFauxDOM,
+    inspectedCandidateId,
+  } = inst.props
 
-  selection
-    .select('.highlight')
-    .remove()
+  const toUnhighlightSel = d3.select(connectFauxDOM('svg', 'chart'))
+    .selectAll('.candidate--highlighted')
+    .call(sel =>
+      shouldRemoveAll
+        ? sel
+        : sel.filter(d => d.id !== inspectedCandidateId))
 
-  selection
-    .select('text')
-    .interrupt()
-    .attr('fill', '#888')
-    .style('font-weight', '500')
-    .style('font-size', '.75em')
+  if (toUnhighlightSel.size()) {
+    toUnhighlightSel
+      .classed('candidate--highlighted', false)
+
+    toUnhighlightSel
+      .select('.highlight')
+      .remove()
+
+    toUnhighlightSel
+      .select('text')
+      .interrupt()
+      .style('font-weight', '500')
+      .style('font-size', '.75em')
+      .attr('fill', '#888')
+      .attr('y', d => inst.y(d.value) - 5)
+  }
 }
 
 const BarChart = ({
