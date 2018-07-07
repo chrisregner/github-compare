@@ -10,6 +10,7 @@
 - compare page
   - bar graphs
     - add other bar graph criterions (pull reqs?/collaborator?/closed issues?) bar graph
+    - better tool tip
   - ratio (issues, pull-requests)
   - age graph (created/last-updated)
   - add/remove repo

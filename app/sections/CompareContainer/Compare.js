@@ -26,10 +26,10 @@ const Compare = (props) => {
   return <div className='center mb4 w-100'>
     <div className='center mt3 ph3 ph4-l mw7 gray'>
       <div className='flex nl2 nr2'>
-        {Object.entries(CHART_TYPES).map(([chartType, keys]) =>
-          <div className='ph2' key={chartType}>
-            <h4 className='mb2 f5'>{chartType}</h4>
-            {Object.entries(keys).map(([key, prettyName], i) =>
+        {Object.entries(CHART_TYPES).map(([typeName, keys]) =>
+          <div className='ph2' key={typeName}>
+            <h4 className='mb2 f5'>{typeName}</h4>
+            {Object.entries(keys).map(([keyName, key], i) =>
               <button
                 key={key}
                 value={key}
@@ -39,7 +39,7 @@ const Compare = (props) => {
                   setGraphType(key)
                 }}
               >
-                {prettyName}
+                {keyName}
               </button>
             )}
           </div>
@@ -105,17 +105,17 @@ colors[8] = '#ffd43b'
 
 const CHART_TYPES = {
   'Bar Charts': {
-    stargazerCount: 'Stars',
-    forkCount: 'Forks',
-    openIssueCount: 'Open Issues',
-    watcherCount: 'Watchers',
+    'Stars': 'stargazerCount',
+    'Forks': 'forkCount',
+    'Open Issues': 'openIssueCount',
+    'Watchers': 'watcherCount',
   },
   'Timeline Charts': {
-    age: 'Age (Creation/Update)',
+    'Age (Creation/Update)': ['createdAt', 'updatedAt'],
   },
   'Pie Charts': {
-    pullReq: 'Pull Requests',
-    issue: 'Issues',
+    'Pull Requests': ['openPullReqCount', 'closedPullReqCount', 'mergedPullReqCount'],
+    'Issues': ['openIssueCount', 'closedIssueCount'],
   },
 }
 
@@ -134,17 +134,18 @@ const cachedSpecializeData = R.memoizeWith(
   ({ candidates, graphType }) => JSON.stringify(candidates) + graphType,
   specializeCands)
 
-const getTypeNameFromKey = prop =>
-  Object.entries(CHART_TYPES)
-    .find(([type, propToName]) =>
-      Object.keys(propToName).includes(prop)
-    )[0]
+const getTypeNameFromKey = key => {
+  for (let typeName in CHART_TYPES)
+    for (let keyName in CHART_TYPES[typeName])
+      if (String(CHART_TYPES[typeName][keyName]) === String(key))
+        return typeName
+}
 
-const getKeyNameFromKey = (prop) => {
-  for (let type in CHART_TYPES)
-    for (let innerProp in CHART_TYPES[type])
-      if (innerProp === prop)
-        return CHART_TYPES[type][innerProp]
+const getKeyNameFromKey = (key) => {
+  for (let typeName in CHART_TYPES)
+    for (let keyName in CHART_TYPES[typeName])
+      if (String(CHART_TYPES[typeName][keyName]) === String(key))
+        return keyName
 }
 
 Compare.propTypes = {
@@ -155,7 +156,10 @@ Compare.propTypes = {
   toggleClickInspect: PropTypes.func.isRequired,
   toggleHoverInspect: PropTypes.func.isRequired,
   inspectedCandidate: PropTypes.object,
-  graphType: PropTypes.string.isRequired,
+  graphType: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.arrayOf(PropTypes.string),
+  ]).isRequired,
   setGraphType: PropTypes.func.isRequired,
 }
 
