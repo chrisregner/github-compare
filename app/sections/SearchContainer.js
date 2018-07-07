@@ -23,10 +23,14 @@ const SEARCH_REPO_QUERY = gql`
           createdAt,
           updatedAt,
           owner { login, url },
-          issues (states: [OPEN]) { totalCount },
           forks (affiliations: [OWNER, COLLABORATOR, ORGANIZATION_MEMBER]) { totalCount },
           stargazers { totalCount },
           watchers { totalCount },
+          openIssue: issues (states: [OPEN]) { totalCount },
+          closedIssue: issues (states: [CLOSED]) { totalCount },
+          openPullReq: pullRequests (states: [OPEN]) { totalCount },
+          closedPullReq: pullRequests (states: [CLOSED]) { totalCount },
+          mergedPullReq: pullRequests (states: [MERGED]) { totalCount },
         }
       },
     }
@@ -55,7 +59,7 @@ export default compose(
       data: { error, networkStatus, search, fetchMore, variables },
       ownProps: { inputValue },
     }) => ({
-      error,
+      error: error,
       repositoryCount: search && search.repositoryCount,
 
       status: (() => {
@@ -68,7 +72,7 @@ export default compose(
             return 'error'
           case 7:
             switch (true) {
-              case (variables.query.length && !(search.nodes && search.nodes.length)):
+              case (variables.query.length && !(search && search.nodes && search.nodes.length)):
                 return 'no-match'
               case (search && search.pageInfo.hasNextPage):
                 return 'can-load-more'
@@ -104,10 +108,14 @@ export default compose(
           githubUrl: repo.url,
           forkCount: repo.forks.totalCount,
           stargazerCount: repo.stargazers.totalCount,
-          openIssueCount: repo.issues.totalCount,
           watcherCount: repo.watchers.totalCount,
           ownerUsername: repo.owner.login,
           ownerGithubUrl: repo.owner.url,
+          openIssueCount: repo.openIssue.totalCount,
+          closedIssueCount: repo.closedIssue.totalCount,
+          openPullReqCount: repo.openPullReq.totalCount,
+          closedPullReqCount: repo.closedPullReq.totalCount,
+          mergedPullReqCount: repo.mergedPullReq.totalCount,
         }))
         : null,
     }),

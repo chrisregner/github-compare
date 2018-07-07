@@ -11,25 +11,20 @@ import UserIcon from 'app/components/icons/UserIcon'
 import WarningIcon from 'app/components/icons/WarningIcon'
 
 const Repo = ({
-  createdAt,
   description,
-  forkCount,
   githubUrl,
   name,
   nameWithOwner,
-  openIssueCount,
   ownerGithubUrl,
   ownerUsername,
-  stargazerCount,
-  updatedAt,
-  watcherCount,
+  ...props
 }) =>
   <React.Fragment>
     <div className='flex flex-wrap items-center mb2'>
       <h2 className='pr3 f4 normal lh-title'>{name}</h2>
 
       <span className='flex items-center'>
-        <span className='pr1'>
+        <span className='mr1' title='URL'>
           <LinkIcon width='.75em' height='.75em' color='#555555' />
         </span>
         <span className='dib f6'>
@@ -39,60 +34,70 @@ const Repo = ({
     </div>
 
     <div className='flex flex-wrap items-center mb2 f7 gray'>
-      <span className='flex items-center'>
-        <span className='pr1'>
+      <span className='flex items-center' title='author'>
+        <span className='mr1'>
           <UserIcon width='1em' height='1em' color='#555555' />
         </span>
         <a href={ownerGithubUrl} className='mr3 blue no-underline'>{ownerUsername}</a>
       </span>
 
-      <span className='flex items-center'>
-        <span className='pr1'>
-          <CalendarIcon width='1em' height='1em' color='#555555' />
+      {repoProps.map(({
+        formatter = d => d,
+        icon: Icon,
+        iconProps = { width: '1em', height: '1em' },
+        key,
+        tooltip,
+      }) =>
+        <span className='flex items-center' title={tooltip} key={key}>
+          <span className='mr1'>
+            <Icon {...iconProps} color='#555555' />
+          </span>
+          <span className='mr3'>{formatter(props[key])}</span>
         </span>
-        <span className='mr3'>{format(new Date(createdAt), 'MM/DD/YY')}</span>
-      </span>
-
-      <span className='flex items-center'>
-        <span className='pr1'>
-          <PencilIcon width='1em' height='1em' color='#555555' />
-        </span>
-        <span className='mr3'>{format(new Date(updatedAt), 'MM/DD/YY')}</span>
-      </span>
-
-      <span className='flex items-center'>
-        <span className='pr1'>
-          <StarIcon width='1.2em' height='1.2em' color='#555555' />
-        </span>
-        <span className='mr3'>{stargazerCount}</span>
-      </span>
-
-      <span className='flex items-center'>
-        <span className='pr1'>
-          <WarningIcon width='1em' height='1em' color='#555555' />
-        </span>
-        <span className='mr3'>{openIssueCount}</span>
-      </span>
-
-      <span className='flex items-center'>
-        <span className='pr1'>
-          <ForkIcon width='1.2em' height='1.2em' color='#555555' />
-        </span>
-        <span className='mr3'>{forkCount}</span>
-      </span>
-
-      <span className='flex items-center'>
-        <span className='pr1'>
-          <EyeIcon width='1.5em' height='1.5em' color='#555555' />
-        </span>
-        <span className='mr3'>{watcherCount}</span>
-      </span>
+      )}
     </div>
 
     {description
       ? <p className='f6 lh-copy'>{description}</p>
       : <p className='f6 lh-copy gray'>(No description provided)</p>}
   </React.Fragment>
+
+const repoProps = [
+  {
+    icon: CalendarIcon,
+    key: 'createdAt',
+    tooltip: 'created at',
+    formatter: d => format(new Date(d), 'MM/DD/YY'),
+  },
+  {
+    icon: PencilIcon,
+    key: 'updatedAt',
+    tooltip: 'updated at',
+    formatter: d => format(new Date(d), 'MM/DD/YY'),
+  },
+  {
+    icon: StarIcon,
+    key: 'stargazerCount',
+    tooltip: 'stars',
+    iconProps: { width: '1.2em', height: '1.2em' },
+  },
+  {
+    icon: WarningIcon,
+    key: 'openIssueCount',
+    tooltip: 'open issues',
+  },
+  {
+    icon: ForkIcon,
+    key: 'forkCount',
+    tooltip: 'forks',
+    iconProps: { width: '1.2em', height: '1.2em' },
+  },
+  {
+    icon: EyeIcon,
+    key: 'watcherCount',
+    tooltip: 'watchers',
+  },
+]
 
 Repo.propTypes = {
   createdAt: PropTypes.string.isRequired,
