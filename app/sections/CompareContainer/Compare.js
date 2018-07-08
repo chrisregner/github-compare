@@ -29,14 +29,14 @@ const Compare = (props) => {
         {Object.entries(CHART_TYPES).map(([typeName, keys]) =>
           <div className='ph2' key={typeName}>
             <h4 className='mb2 f6'>{typeName}</h4>
-            {Object.entries(keys).map(([keyName, key], i) =>
+            {Object.entries(keys).map(([keyName], i) =>
               <button
-                key={key}
-                value={key}
-                className={`bn br2 mr2 pa1 f7 white${key === graphType ? ' bg-blue' : ' bg-gray'}`}
+                key={keyName}
+                value={keyName}
+                className={`bn br2 mr2 pa1 f7 white${keyName === graphType ? ' bg-blue' : ' bg-gray'}`}
                 onClick={(ev) => {
                   ev.preventDefault()
-                  setGraphType(key)
+                  setGraphType(keyName)
                 }}
               >
                 {keyName}
@@ -49,18 +49,18 @@ const Compare = (props) => {
 
     <div className='center mt4 ph3 ph4-l mw8'>
       {(() => {
-        switch (getTypeNameFromKey(graphType)) {
+        switch (getTypeNameFromKeyName(graphType)) {
           case 'Bar Charts':
             return <BarChart
-              dataKeyName={getKeyNameFromKey(graphType)}
+              dataKeyName={graphType}
               inspectedCandidateId={inspectedCandidate && inspectedCandidate.nameWithOwner}
-              candidates={cachedSpecializeData(props)}
+              candidates={cachedSpecializeData(props, getKeyFromKeyName(graphType))}
             />
           case 'Pie Charts':
             return <PieChart
-              dataKeyName={getKeyNameFromKey(graphType)}
+              dataKeyName={graphType}
               inspectedCandidateId={inspectedCandidate && inspectedCandidate.nameWithOwner}
-              candidates={cachedSpecializeData(props)}
+              candidates={cachedSpecializeData(props, getKeyFromKeyName(graphType))}
             />
         }
       })()}
@@ -122,38 +122,40 @@ const CHART_TYPES = {
     'Age (Creation/Update)': ['createdAt', 'updatedAt'],
   },
   'Pie Charts': {
-    'Pull Requests': ['openPullReqCount', 'closedPullReqCount', 'mergedPullReqCount'],
-    'Issues': ['openIssueCount', 'closedIssueCount'],
+    'Pull Requests': ['mergedPullReqCount', 'closedPullReqCount', 'openPullReqCount'],
+    'Issues': ['closedIssueCount', 'openIssueCount'],
   },
 }
 
-const specializeCands = ({ candidates, graphType, toggleClickInspect, toggleHoverInspect }) =>
+const specializeCands = ({ candidates, toggleClickInspect, toggleHoverInspect }, key) =>
   candidates
-    .map((c, i) => ({
-      id: c.nameWithOwner,
-      value: c[graphType],
+    .map((v, i) => ({
+      id: v.nameWithOwner,
+      value: typeof key === 'string'
+        ? v[key]
+        : key.reduce((a, k) => ({ ...a, [k]: v[k] }), {}),
       color: colors[i],
-      toggleClickInspect: () => toggleClickInspect(c.nameWithOwner),
-      toggleHoverInspect: () => toggleHoverInspect(c.nameWithOwner),
+      toggleClickInspect: () => toggleClickInspect(v.nameWithOwner),
+      toggleHoverInspect: () => toggleHoverInspect(v.nameWithOwner),
     }))
     .sort((a, b) => a.value < b.value)
 
 const cachedSpecializeData = R.memoizeWith(
-  ({ candidates, graphType }) => JSON.stringify(candidates) + graphType,
+  ({ candidates }, key) => JSON.stringify(candidates) + JSON.stringify(key),
   specializeCands)
 
-const getTypeNameFromKey = (key) => {
+const getTypeNameFromKeyName = (keyName) => {
   for (let typeName in CHART_TYPES)
-    for (let keyName in CHART_TYPES[typeName])
-      if (String(CHART_TYPES[typeName][keyName]) === String(key))
+    for (let currKeyName in CHART_TYPES[typeName])
+      if (keyName === currKeyName)
         return typeName
 }
 
-const getKeyNameFromKey = (key) => {
+const getKeyFromKeyName = (keyName) => {
   for (let typeName in CHART_TYPES)
-    for (let keyName in CHART_TYPES[typeName])
-      if (String(CHART_TYPES[typeName][keyName]) === String(key))
-        return keyName
+    for (let currKeyName in CHART_TYPES[typeName])
+      if (keyName === currKeyName)
+        return CHART_TYPES[typeName][currKeyName]
 }
 
 Compare.propTypes = {

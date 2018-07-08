@@ -14,5 +14,5 @@ export default compose(
   ),
 
   // TODO: move this to redux?
-  withState('graphType', 'setGraphType', 'stargazerCount'),
+  withState('graphType', 'setGraphType', 'Pull Requests'),
 )(Compare)
