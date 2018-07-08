@@ -35,7 +35,7 @@ const drawChart = (inst) => {
     .rangeRound([innerHt, 0])
   const svg = connectFauxDOM('svg', 'chart')
   const barWd = (innerWd / 10) * (1 - BAR_PADDING)
-  let t, axisYSel, candidatesSel, barsTrans, titlesSel, valuesSel
+  let t, axisYLabelSel, axisYGridSel, candidatesSel, barsTrans, titlesSel, valuesSel
 
   // If this is first render...
   if (!inst.hasRendered) {
@@ -49,8 +49,10 @@ const drawChart = (inst) => {
       .attr('transform', 'translate(' + MARGIN.left + ',' + MARGIN.top + ')')
 
     // Add y axis element
-    axisYSel = wrapperSel.append('g')
-      .attr('class', 'axis-y')
+    axisYGridSel = wrapperSel.append('g')
+      .attr('class', 'axis-y-grid')
+    axisYLabelSel = wrapperSel.append('g')
+      .attr('class', 'axis-y-label')
 
     // Add candidate groups element; enter data
     candidatesSel = wrapperSel.append('g')
@@ -102,9 +104,10 @@ const drawChart = (inst) => {
     removeHighlight(inst, true)
 
     // Select elements; enter candidates data
-    axisYSel = d3.select(svg).select('.axis-y')
-    candidatesSel = d3.select(svg)
-      .selectAll('.candidate')
+    const svgSel = d3.select(svg)
+    axisYLabelSel = svgSel.select('.axis-y-label')
+    axisYGridSel = svgSel.select('.axis-y-grid')
+    candidatesSel = svgSel.selectAll('.candidate')
       .data(candidates) // data should be updated before selecting its descendants
     titlesSel = candidatesSel.select('title')
     valuesSel = candidatesSel.select('text')
@@ -128,7 +131,14 @@ const drawChart = (inst) => {
   }
 
   // Update y axis
-  axisYSel.call(d3.axisLeft(y))
+  axisYGridSel
+    .call(
+      d3.axisLeft(y)
+        .tickSize(-innerWd + 6)
+        .tickFormat(''))
+
+  axisYLabelSel
+    .call(d3.axisLeft(y))
 
   // Do bars updates/animations that are common to both first render and update scenario
   barsTrans
@@ -245,6 +255,16 @@ const BarChart = ({
   <div>
     <h2 className='mb3 f3 tc'>{dataKeyName} Count</h2>
     {chart}
+    <style jsx global>{`
+      .axis-y-grid line {
+        stroke: #e6e6e6;
+        stroke-dasharray: 2;
+      }
+
+      .axis-y-grid path {
+        stroke-width: 0;
+      }
+    `}</style>
   </div>
 
 BarChart.propTypes = {
