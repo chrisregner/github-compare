@@ -7,11 +7,11 @@ import * as d3 from 'd3'
 import 'd3-selection-multi'
 import withContainerWidth from 'app/utils/withContainerWidth'
 import withStyleableContainer from 'app/utils/withStyleableContainer'
-import lighten from 'app/utils/lighten'
+// import lighten from 'app/utils/lighten'
 import { compose, lifecycle } from 'recompose'
 
 const HEIGHT = 500
-const DURATION = 500
+// const DURATION = 500
 
 const drawChart = (inst) => {
   const {
@@ -33,7 +33,7 @@ const drawChart = (inst) => {
       name: cand.id,
       values: value,
       ...cand,
-    }))
+    })),
   }
 
   const g = d3.select(svg).append('g')
@@ -63,7 +63,7 @@ const drawChart = (inst) => {
       r: d.r,
     }))
 
-  leavesData.forEach(leafDatum => {
+  leavesData.forEach((leafDatum) => {
     const valuesQty = Object.keys(leafDatum.data.values).length
     const applyPieLayout = d3.pie()
       .sort(null)
@@ -82,7 +82,7 @@ const drawChart = (inst) => {
 
       while (theColors.length !== valuesQty) {
         const c = d3.hsl(leafDatum.data.color)
-        c.l += .05 * multiplier
+        c.l += 0.05 * multiplier
         c.h += 5 * multiplier
         theColors.push(c.hex())
         multiplier++
@@ -125,7 +125,7 @@ const drawChart = (inst) => {
 const updateHighlight = (inst) => {}
 
 // TODO: implement or remove
-const removeHighlight = () => {}
+// const removeHighlight = () => {}
 
 const PieChart = ({
   chart,
