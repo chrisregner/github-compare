@@ -9,7 +9,7 @@ import withStyleableContainer from 'app/utils/withStyleableContainer'
 import lighten from 'app/utils/lighten'
 import { compose, lifecycle } from 'recompose'
 
-const HEIGHT = 400
+const HEIGHT = 300
 const MARGIN = { top: 25, bottom: 10, left: 50, right: 0 }
 const BAR_PADDING = 0.3
 const HIGHLIGHT_SIZE = 5

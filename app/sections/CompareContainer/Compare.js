@@ -17,23 +17,23 @@ const Compare = (props) => {
   } = props
 
   if (!candidates.length)
-    return <div className='center mb4 w-100'>
-      <div className='center mt2 ph3 ph4-l mw7 gray'>
+    return <div className='mt2 mb4 w-100'>
+      <div className='center ph3 ph4-l mw7 gray'>
         Please select candidates first.
       </div>
     </div>
 
-  return <div className='center mb4 w-100'>
-    <div className='center mt3 ph3 ph4-l mw7 gray'>
+  return <div className='mt2 mb4 w-100'>
+    <div className='center ph3 ph4-l mw7 gray'>
       <div className='flex nl2 nr2'>
         {Object.entries(CHART_TYPES).map(([typeName, keys]) =>
           <div className='ph2' key={typeName}>
-            <h4 className='mb2 f5'>{typeName}</h4>
+            <h4 className='mb2 f6'>{typeName}</h4>
             {Object.entries(keys).map(([keyName, key], i) =>
               <button
                 key={key}
                 value={key}
-                className={`bn br2 mr2 pa1 f6 white${key === graphType ? ' bg-blue' : ' bg-gray'}`}
+                className={`bn br2 mr2 pa1 f7 white${key === graphType ? ' bg-blue' : ' bg-gray'}`}
                 onClick={(ev) => {
                   ev.preventDefault()
                   setGraphType(key)
@@ -75,7 +75,7 @@ const Compare = (props) => {
             href='#'
             style={{
               color: colors[i],
-              backgroundColor: c === inspectedCandidate ? lighten(colors[i]) : '',
+              backgroundColor: c === inspectedCandidate ? lighten(0.3)(colors[i]) : '',
             }}
             className='no-underline'
             onClick={(ev) => {

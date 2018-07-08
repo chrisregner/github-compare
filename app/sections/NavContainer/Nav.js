@@ -1,13 +1,20 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import c from 'classnames'
 import { Link } from 'react-router-dom'
 
 const Nav = ({ candidatesCount, currentPathname }) =>
-  <div className='gray f6'>
-    <Link to='/' className={currentPathname === '/' ? 'blue' : 'gray'}>
+  <div className='gray f5'>
+    <Link to='/' className={c(
+      'bn br2 mr2 pa1 f5 white no-underline',
+      currentPathname === '/' ? ' bg-blue' : ' bg-gray',
+    )}>
       Search
-    </Link> |&ensp;
-    <Link to='/compare' className={currentPathname === '/compare' ? 'blue' : 'gray'}>
+    </Link>
+    <Link to='/compare' className={c(
+      'bn br2 mr2 pa1 f5 white no-underline',
+      currentPathname === '/compare' ? ' bg-blue' : ' bg-gray',
+    )}>
       Compare ({candidatesCount})
     </Link>
   </div>
