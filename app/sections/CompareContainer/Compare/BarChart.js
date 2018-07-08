@@ -42,7 +42,7 @@ const drawChart = (inst) => {
     .rangeRound([innerHt, 0])
   const svg = connectFauxDOM('svg', 'chart')
 
-  let t, axisYLabelSel, axisYGridSel, candidatesSel, barsTrans, titlesSel, valuesSel
+  let t, axisYLabelSel, axisYGridSel, candidatesSel, barsTrans, valuesSel
 
   // If this is first render...
   if (!inst.hasRendered) {
@@ -90,9 +90,6 @@ const drawChart = (inst) => {
       .attr('fill', d => d.color)
       .transition(t)
 
-    // Add the tooltip elements
-    titlesSel = candidatesSel.append('title')
-
     // Add the values elements
     valuesSel = candidatesSel.append('text')
       .style('font-size', '.75em')
@@ -116,7 +113,6 @@ const drawChart = (inst) => {
     axisYGridSel = svgSel.select('.axis-y-grid')
     candidatesSel = svgSel.selectAll('.candidate')
       .data(candidates) // data should be updated before selecting its descendants
-    titlesSel = candidatesSel.select('title')
     valuesSel = candidatesSel.select('text')
 
     // Get bar transition instance
@@ -151,9 +147,6 @@ const drawChart = (inst) => {
   barsTrans
     .attr('height', d => innerHt - y(d.value))
     .attr('y', d => y(d.value))
-
-  // Update the candidate tooltip
-  titlesSel.text(d => `${d.id} (click to inspect)`)
 
   // Update/animate the values
   valuesSel
