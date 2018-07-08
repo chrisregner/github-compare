@@ -23,7 +23,7 @@ const Compare = (props) => {
       </div>
     </div>
 
-  return <div className='mt2 mb4 w-100'>
+  return <div className='mt2 w-100'>
     <div className='center ph3 ph4-l mw7 gray'>
       <div className='flex nl2 nr2'>
         {Object.entries(CHART_TYPES).map(([typeName, keys]) =>
@@ -89,14 +89,22 @@ const Compare = (props) => {
       )}
     </div>
 
-    {inspectedCandidate && <div className='center mt4 ph3 ph4-l mw7'>
-      <div
-        className='bl bw2 pa3'
-        style={{ borderColor: colors[candidates.findIndex(c => c === inspectedCandidate)] }}
-      >
-        <Repo {...inspectedCandidate} />
-      </div>
-    </div>}
+    <div className='_inspected-candidate_wrapper center mt4 ph3 ph4-l mw7 min-h4'>
+      {inspectedCandidate
+        ? <div
+          className='bl bw2 pt3 pb4 ph3'
+          style={{ borderColor: colors[candidates.findIndex(c => c === inspectedCandidate)] }}
+        >
+          <Repo {...inspectedCandidate} />
+        </div>
+        : <div className='gray'>
+          Hover or click a candidate (on chart or on list) to inspect a candidate.
+        </div>}
+    </div>
+
+    <style jsx>{`
+      ._inspected-candidate_wrapper { min-height: 8rem; }
+    `}</style>
   </div>
 }
 

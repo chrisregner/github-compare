@@ -1,9 +1,6 @@
 # todo
 
 - compare page
-  - bar graphs
-    - better tool tip
-    - add other bar graph criterions (pull reqs?/collaborator?/closed issues?) bar graph
   - ratio (issues, pull-requests)
   - age graph (created/last-updated)
   - add/remove repo
@@ -13,6 +10,12 @@
 - limit candidates to 10
 - handle 0 candidates
 - 404
-- improve bar graphs bar highlight (remove bottom border)
 - add proper README.md (explain original purpose)
 - add it to portfolio
+
+# enhancements
+
+- better tool tip for bar graph
+- add other bar graph criterions (pull reqs?/collaborator?/closed issues?) bar graph
+- improve bar graphs highlight (remove bottom border)
+- handle width change in bar graphs

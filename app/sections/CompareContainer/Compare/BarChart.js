@@ -11,7 +11,7 @@ import { compose, lifecycle } from 'recompose'
 
 const HEIGHT = 300
 const MARGIN = { top: 25, bottom: 10, left: 50, right: 0 }
-const BAR_PADDING = 0.3
+const BAR_PADDING_PCT = 0.25
 const HIGHLIGHT_SIZE = 5
 const DURATION = 500
 
@@ -30,11 +30,18 @@ const drawChart = (inst) => {
   const x = d3.scaleBand()
     .domain(candidates.map(c => c.id))
     .rangeRound([0, innerWd])
+    .padding(
+      calcPdPct({
+        qty: candidates.length,
+        pdPct: BAR_PADDING_PCT,
+        maxQty: 10,
+      })
+    )
   const y = d3.scaleLinear()
     .domain([0, highestValue])
     .rangeRound([innerHt, 0])
   const svg = connectFauxDOM('svg', 'chart')
-  const barWd = (innerWd / 10) * (1 - BAR_PADDING)
+
   let t, axisYLabelSel, axisYGridSel, candidatesSel, barsTrans, titlesSel, valuesSel
 
   // If this is first render...
@@ -76,9 +83,9 @@ const drawChart = (inst) => {
     // Add the bar elements; set properties unique to first render; get its transition instance
     barsTrans = candidatesSel.append('rect')
       .attr('class', 'bar')
-      .attr('width', barWd)
+      .attr('width', x.bandwidth())
       .attr('height', 0)
-      .attr('x', d => x(d.id) + (x.bandwidth() / 2) - (barWd / 2))
+      .attr('x', d => x(d.id))
       .attr('y', innerHt)
       .attr('fill', d => d.color)
       .transition(t)
@@ -127,7 +134,7 @@ const drawChart = (inst) => {
     barsTrans = candidatesSel.select('.bar')
       .transition(t)
       .attr('fill', d => d.color)
-      .attr('width', barWd)
+      .attr('width', x.bandwidth())
   }
 
   // Update y axis
@@ -158,7 +165,6 @@ const drawChart = (inst) => {
   inst.innerHt = innerHt
   inst.x = x
   inst.y = y
-  inst.barWd = barWd
   inst.t = t
 
   // Animate changes to React
@@ -182,7 +188,6 @@ const updateHighlight = (inst) => {
 
   if (toHighlightSel.size()) {
     const innerHt = inst.innerHt
-    const barWd = inst.barWd
     const x = inst.x
     const y = inst.y
 
@@ -195,14 +200,14 @@ const updateHighlight = (inst) => {
       .attr('rx', HIGHLIGHT_SIZE)
       .attr('ry', HIGHLIGHT_SIZE)
       .attr('height', d => innerHt - y(d.value))
-      .attr('width', barWd)
-      .attr('x', d => x(d.id) + (x.bandwidth() / 2) - (barWd / 2))
+      .attr('width', x.bandwidth())
+      .attr('x', d => x(d.id))
       .attr('y', d => y(d.value))
       .transition()
       .duration(DURATION)
       .attr('height', d => innerHt - y(d.value) + (HIGHLIGHT_SIZE * 2))
-      .attr('width', barWd + (HIGHLIGHT_SIZE * 2))
-      .attr('x', d => x(d.id) + (x.bandwidth() / 2) - (barWd / 2) - HIGHLIGHT_SIZE)
+      .attr('width', x.bandwidth() + (HIGHLIGHT_SIZE * 2))
+      .attr('x', d => x(d.id) - HIGHLIGHT_SIZE)
       .attr('y', d => y(d.value) - HIGHLIGHT_SIZE)
 
     toHighlightSel.select('text')
@@ -246,6 +251,17 @@ const removeHighlight = (inst, shouldRemoveAll) => {
       .attr('fill', '#888')
       .attr('y', d => inst.y(d.value) - 5)
   }
+}
+
+const calcPdPct = ({ qty, pdPct, maxQty }) => {
+  const sampleWd = 102.5
+  const colPct = 1 - pdPct
+  const sampleColWdGross = (sampleWd / (maxQty + pdPct))
+  const idealNetWd = sampleColWdGross * colPct
+  const totalPd = sampleWd - (qty * idealNetWd)
+  const pd = totalPd / (qty + 1)
+  const pdPctForQty = pd / (idealNetWd + pd)
+  return pdPctForQty
 }
 
 const BarChart = ({
