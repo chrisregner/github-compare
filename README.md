@@ -2,6 +2,12 @@
 
 - compare page
   - ratio (issues, pull-requests)
+    - labels
+      - id
+      - total
+      - per slice (count, percentage, state)
+    - in transition
+    - highlight (click to toggle highlight)
   - age graph (created/last-updated)
   - add/remove repo
   - handle resize

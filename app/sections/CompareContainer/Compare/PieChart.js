@@ -49,74 +49,42 @@ const drawChart = (inst) => {
 
   applyPackLayout(rootData)
 
-  const ancestorData = rootData.ancestors()
-  const leavesData = rootData.leaves()
+  const mainCircleData = rootData.ancestors()
+  const circlesData = rootData.leaves()
 
+  // Add the parent circle
   g.selectAll('circle')
-    .data(ancestorData)
+    .data(mainCircleData)
     .enter()
     .append('circle')
-    .style('fill', '#333')
+    .style('fill', '#f4f4f4')
     .attrs(d => ({
       cx: d.x,
       cy: d.y,
       r: d.r,
     }))
 
-  leavesData.forEach((leafDatum) => {
-    const valuesQty = Object.keys(leafDatum.data.values).length
-    const applyPieLayout = d3.pie()
-      .sort(null)
-      .value(d => d.value)
-    const path = d3.arc()
-      .outerRadius(leafDatum.r)
-      .innerRadius(0)
+  // Add the pies
+  const gPie = g.selectAll('g.pie')
+    .data(circlesData)
+    .enter()
+    .append('g')
+    .attr('class', '.pie')
 
-    // const label = d3.arc()
-    //   .outerRadius(radius - 40)
-    //   .innerRadius(radius - 40)
-
-    const colors = (() => {
-      let multiplier = -Math.floor(valuesQty / 2)
-      const theColors = []
-
-      while (theColors.length !== valuesQty) {
-        const c = d3.hsl(leafDatum.data.color)
-        c.l += 0.05 * multiplier
-        c.h += 5 * multiplier
-        theColors.push(c.hex())
-        multiplier++
-      }
-
-      return theColors
-    })()
-
-    const mappedValues = Object.values(leafDatum.data.values)
-      .reduce((a, v, i) =>
-        [...a, {
-          value: v,
-          color: colors[i],
-        }],
-      [])
-
-    g.append('g')
-      .selectAll('.slice')
-      .data(applyPieLayout(mappedValues))
-      .enter()
-      .append('path')
-      .attrs(d => ({
-        class: 'slice',
-        d: path,
-        fill: d.data.color,
-        stroke: '#fff',
-        transform: `translate(${leafDatum.x}, ${leafDatum.y})`,
-      }))
-
-    // pie.append('text')
-    //   .attr('transform', function(d) { return 'translate(' + label.centroid(d) + ')' })
-    //   .attr('dy', '0.35em')
-    //   .text(function(d) { return d.data.age })
-  })
+  // Add the slices
+  gPie.selectAll('.slice')
+    .data(d => circleToSlices(d))
+    .enter()
+    .append('path')
+    .attrs(d => ({
+      class: 'slice',
+      fill: d.data.color,
+      stroke: '#f4f4f4',
+      transform: `translate(${d.x}, ${d.y})`,
+      d: d3.arc()
+        .outerRadius(d.r)
+        .innerRadius(0),
+    }))
 
   drawFauxDOM()
 }
@@ -126,6 +94,32 @@ const updateHighlight = (inst) => {}
 
 // TODO: implement or remove
 // const removeHighlight = () => {}
+
+const circleToSlices = (circ) => {
+  const slices = []
+  const circVals = Object.values(circ.data.values)
+  const baseMultiplier = -Math.floor(circVals.length / 2)
+
+  for (const [i, value] of circVals.entries())
+    slices.push({
+      value,
+      color: (() => {
+        const c = d3.hsl(circ.data.color)
+
+        c.l += 0.05 * (baseMultiplier + i)
+        c.h += 5 * (baseMultiplier + i)
+
+        return c.hex()
+      })(),
+    })
+
+  return applyPieLayout(slices).map(slice =>
+    ({ ...circ, ...slice }))
+}
+
+const applyPieLayout = d3.pie()
+  .sort(null)
+  .value(d => d.value)
 
 const PieChart = ({
   chart,
