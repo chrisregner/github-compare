@@ -12,6 +12,16 @@ import { compose, lifecycle } from 'recompose'
 
 const HEIGHT = 500
 // const DURATION = 500
+const BG_COLOR = '#f4f4f4'
+
+const PieChart = ({
+  chart,
+  typeName,
+}) =>
+  <div>
+    <h2 className='mb3 f3 tc'>{typeName} Pie Chart</h2>
+    {chart}
+  </div>
 
 const drawChart = (inst) => {
   const {
@@ -31,7 +41,8 @@ const drawChart = (inst) => {
     name: 'candidates',
     children: candidates.map(({ value, ...cand }) => ({
       name: cand.id,
-      values: value,
+      values: value.map(val => val.value),
+      valueTitles: value.map(val => val.title),
       ...cand,
     })),
   }
@@ -40,7 +51,7 @@ const drawChart = (inst) => {
   const rootData = d3.hierarchy(mappedData)
     .sum(d =>
       d.values
-        ? Object.entries(d.values).reduce((sum, [_, val]) => sum + val, 0)
+        ? d.values.reduce((sum, val) => sum + val, 0)
         : null)
     .sort((a, b) => b.value - a.value)
   const applyPackLayout = d3.pack()
@@ -57,7 +68,7 @@ const drawChart = (inst) => {
     .data(mainCircleData)
     .enter()
     .append('circle')
-    .style('fill', '#f4f4f4')
+    .style('fill', BG_COLOR)
     .attrs(d => ({
       cx: d.x,
       cy: d.y,
@@ -70,6 +81,8 @@ const drawChart = (inst) => {
     .enter()
     .append('g')
     .attr('class', '.pie')
+    .on('mouseenter', d => d.data.toggleHoverInspect())
+    .on('mouseleave', d => d.data.toggleHoverInspect())
 
   // Add the slices
   gPie.selectAll('.slice')
@@ -79,12 +92,23 @@ const drawChart = (inst) => {
     .attrs(d => ({
       class: 'slice',
       fill: d.data.color,
-      stroke: '#f4f4f4',
+      stroke: BG_COLOR,
       transform: `translate(${d.x}, ${d.y})`,
       d: d3.arc()
         .outerRadius(d.r)
         .innerRadius(0),
     }))
+
+  // Add the labels
+  // gPie.append('text')
+  //   .text(d => d.data.id.split('/')[1])
+  //   .style('font-size', '1em')
+  //   .attrs(d => ({
+  //     y: d.y,
+  //     x: d.x,
+  //     fill: '#000',
+  //     'text-anchor': 'middle',
+  //   }))
 
   drawFauxDOM()
 }
@@ -121,15 +145,6 @@ const applyPieLayout = d3.pie()
   .sort(null)
   .value(d => d.value)
 
-const PieChart = ({
-  chart,
-  dataKeyName,
-}) =>
-  <div>
-    <h2 className='mb3 f3 tc'>{dataKeyName} Pie Chart</h2>
-    {chart}
-  </div>
-
 PieChart.propTypes = {
   animateFauxDOM: PropTypes.func.isRequired,
   candidates: PropTypes.arrayOf(PropTypes.shape({
@@ -143,7 +158,7 @@ PieChart.propTypes = {
   connectFauxDOM: PropTypes.func.isRequired,
   drawFauxDOM: PropTypes.func.isRequired,
   inspectedCandidateId: PropTypes.string,
-  dataKeyName: PropTypes.string.isRequired,
+  typeName: PropTypes.string.isRequired,
   width: PropTypes.number.isRequired,
 }
 

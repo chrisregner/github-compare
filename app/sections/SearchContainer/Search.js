@@ -16,17 +16,18 @@ const Search = ({
   toggleCandidate,
   updateInputValue,
 }) =>
-  <div className='center flex-auto flex flex-column ph3 ph4-l mw7 w-100'>
-    <input
-      type='text'
-      className='_input ba b--gray br2 pa2 w-100 f6'
-      placeholder='Search Repo...'
-      value={inputValue}
-      onChange={e => updateInputValue(e.target.value)}
-    />
+  <div className='flex flex-column pa3 pa4-l min-vh-100'>
+    <div>
+      <h2 className='mb3'>Search</h2>
 
-    <div className='flex-auto flex flex-column'>
-      {/* Results */}
+      <input
+        type='text'
+        className='_input ba b--gray br2 pa2 w-100 f6'
+        placeholder='Search Repo...'
+        value={inputValue}
+        onChange={e => updateInputValue(e.target.value)}
+      />
+
       {searchResult && !!searchResult.length
         && <React.Fragment>
           <div className='mt4 cf gray'>
@@ -47,36 +48,36 @@ const Search = ({
             </div>
           })}
         </React.Fragment>}
-
-      {(() => {
-        switch (status) {
-          case 'can-load-more':
-            return <div className='mt3'>
-              <button
-                className='button-reset db br2 bn pa2 w-100 bg-dark-gray hover-bg-gray f6 white ttu'
-                onClick={onLoadMore}
-              >
-                Load More
-              </button>
-            </div>
-          case 'error':
-            return <p className='mt3 light-red'>Sorry, an error encountered: {error.message}</p>
-          case 'loading':
-            return <div className='flex-auto flex flex-column justify-center mt3 mb4'>
-              <ReactLoading className='center' type='spin' color='#333333' />
-            </div>
-          case 'no-match':
-            return <p className='mt3 gray'>Sorry, your search has no match.</p>
-          case 'no-more':
-            return <button
-              className='button-reset mt3 br2 bn pa2 db w-100 bg-gray f6 white ttu'
-              disabled
-            >
-              That's All Folks!
-            </button>
-        }
-      })()}
     </div>
+
+    {(() => {
+      switch (status) {
+        case 'can-load-more':
+          return <div className='mt3'>
+            <button
+              className='button-reset db br2 bn pa2 w-100 bg-dark-gray hover-bg-gray f6 white ttu'
+              onClick={onLoadMore}
+            >
+                Load More
+            </button>
+          </div>
+        case 'error':
+          return <p className='mt3 light-red'>Sorry, an error encountered: {error.message}</p>
+        case 'loading':
+          return <div className='flex-auto self-center flex flex-column justify-center pv3 pv4-l'>
+            <ReactLoading type='spin' color='#333333' />
+          </div>
+        case 'no-match':
+          return <p className='mt3 gray'>Sorry, your search has no match.</p>
+        case 'no-more':
+          return <button
+            className='button-reset mt3 br2 bn pa2 db w-100 bg-gray f6 white ttu'
+            disabled
+          >
+              That's All Folks!
+          </button>
+      }
+    })()}
 
     <style jsx>{`
       /* custom styles */

@@ -5,7 +5,6 @@ import { withFauxDOM } from 'react-faux-dom'
 import PropTypes from 'prop-types'
 import * as d3 from 'd3'
 import withContainerWidth from 'app/utils/withContainerWidth'
-import withStyleableContainer from 'app/utils/withStyleableContainer'
 import lighten from 'app/utils/lighten'
 import { compose, lifecycle } from 'recompose'
 
@@ -14,6 +13,25 @@ const MARGIN = { top: 25, bottom: 10, left: 50, right: 0 }
 const BAR_PADDING_PCT = 0.25
 const HIGHLIGHT_SIZE = 5
 const DURATION = 500
+
+const BarChart = ({
+  chart,
+  typeTitle,
+}) =>
+  <React.Fragment>
+    <h2 className='mb3 f3 tc'>{typeTitle} Count</h2>
+    {chart}
+    <style jsx global>{`
+      .axis-y-grid line {
+        stroke: #e6e6e6;
+        stroke-dasharray: 2;
+      }
+
+      .axis-y-grid path {
+        stroke-width: 0;
+      }
+    `}</style>
+  </React.Fragment>
 
 const drawChart = (inst) => {
   const {
@@ -168,7 +186,7 @@ const updateHighlight = (inst) => {
   const {
     connectFauxDOM,
     animateFauxDOM,
-    inspectedCandidateId,
+    inspectedId,
   } = inst.props
 
   // Remove highlight of any candidate that shouldn't be highlighted
@@ -177,7 +195,7 @@ const updateHighlight = (inst) => {
   // Highlight the inspected candidate (if not highlighted yet)
   const toHighlightSel = d3.select(connectFauxDOM('svg', 'chart'))
     .selectAll('.candidate:not(.candidate--highlighted)')
-    .filter(d => d.id === inspectedCandidateId)
+    .filter(d => d.id === inspectedId)
 
   if (toHighlightSel.size()) {
     const innerHt = inst.innerHt
@@ -218,7 +236,7 @@ const updateHighlight = (inst) => {
 const removeHighlight = (inst, shouldRemoveAll) => {
   const {
     connectFauxDOM,
-    inspectedCandidateId,
+    inspectedId,
   } = inst.props
 
   const toUnhighlightSel = d3.select(connectFauxDOM('svg', 'chart'))
@@ -226,7 +244,7 @@ const removeHighlight = (inst, shouldRemoveAll) => {
     .call(sel =>
       shouldRemoveAll
         ? sel
-        : sel.filter(d => d.id !== inspectedCandidateId))
+        : sel.filter(d => d.id !== inspectedId))
 
   if (toUnhighlightSel.size()) {
     toUnhighlightSel
@@ -257,25 +275,6 @@ const calcPdPct = ({ qty, pdPct, maxQty }) => {
   return pdPctForQty
 }
 
-const BarChart = ({
-  chart,
-  dataKeyName,
-}) =>
-  <div>
-    <h2 className='mb3 f3 tc'>{dataKeyName} Count</h2>
-    {chart}
-    <style jsx global>{`
-      .axis-y-grid line {
-        stroke: #e6e6e6;
-        stroke-dasharray: 2;
-      }
-
-      .axis-y-grid path {
-        stroke-width: 0;
-      }
-    `}</style>
-  </div>
-
 BarChart.propTypes = {
   animateFauxDOM: PropTypes.func.isRequired,
   candidates: PropTypes.arrayOf(PropTypes.shape({
@@ -288,13 +287,12 @@ BarChart.propTypes = {
   chart: PropTypes.node,
   connectFauxDOM: PropTypes.func.isRequired,
   drawFauxDOM: PropTypes.func.isRequired,
-  inspectedCandidateId: PropTypes.string,
-  dataKeyName: PropTypes.string.isRequired,
+  inspectedId: PropTypes.string,
+  typeTitle: PropTypes.string.isRequired,
   width: PropTypes.number.isRequired,
 }
 
 export default compose(
-  withStyleableContainer,
   withContainerWidth,
   withFauxDOM,
 
@@ -312,8 +310,8 @@ export default compose(
         drawChart(this)
 
       // Else, if inspected candidate has changed and the chart is NOT animating
-      // (highlight would be automatically updated every time an animation finishes)
-      else if ((prevProps.inspectedCandidateId !== this.props.inspectedCandidateId) && !this.t)
+      // Note: highlight would be automatically updated every time a draw finishes
+      else if ((prevProps.inspectedId !== this.props.inspectedId) && !this.t)
         this.updateHighlight()
     },
   }),

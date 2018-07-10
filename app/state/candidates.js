@@ -1,17 +1,30 @@
 import { handleActions, createAction } from 'redux-actions'
-import { getCandidates } from 'app/state'
+import * as fromState from 'app/state'
+import { colors } from 'app/constants'
 
 /* Action Types */
 const TOGGLE_CANDIDATE = 'gihub-search/candidates/TOGGLE_CANDIDATE'
 
 /* Redux */
-const defaultState = []
+const defaultState = {
+  availableColors: colors,
+  candidates: [],
+}
 export default handleActions({
 
-  [TOGGLE_CANDIDATE]: (state, { payload }) =>
-    state.find(candidate => candidate.nameWithOwner === payload.nameWithOwner)
-      ? state.filter(candidate => candidate.nameWithOwner !== payload.nameWithOwner)
-      : [...state, payload],
+  [TOGGLE_CANDIDATE]: ({ candidates, availableColors, ...state }, { payload }) => {
+    const match = candidates.find(cand => cand.nameWithOwner === payload.nameWithOwner)
+
+    return {
+      candidates: match
+        ? candidates.filter(cand => cand !== match)
+        : [...candidates, { ...payload, color: availableColors[0] }],
+      availableColors: match
+        ? [...availableColors, match.color]
+        : availableColors.slice(1),
+      ...state,
+    }
+  },
 
 }, defaultState)
 
@@ -19,6 +32,6 @@ export default handleActions({
 export const toggleCandidate = createAction(TOGGLE_CANDIDATE)
 
 /* Selectors */
-export { getCandidates }
+export const getCandidates = state => fromState.getCandidates(state).candidates
 export const getIds = state => getCandidates(state).map(candidate => candidate.nameWithOwner)
 export const getCount = state => getCandidates(state).length

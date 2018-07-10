@@ -1,5 +1,6 @@
 import { handleActions, createAction } from 'redux-actions'
-import { getUi, getCandidates } from 'app/state'
+import { getUi } from 'app/state'
+import { getCandidates } from 'app/state/candidates'
 
 /* Action Types */
 const TOGGLE_CLICK_INSPECT = 'gihub-search/ui/TOGGLE_CLICK_INSPECT'
@@ -32,7 +33,10 @@ export const toggleClickInspect = createAction(TOGGLE_CLICK_INSPECT)
 export const toggleHoverInspect = createAction(TOGGLE_HOVER_INSPECT)
 
 /* Selectors */
+export const getInspectedId = state =>
+  getUi(state).inspectedHoverId || getUi(state).inspectedClickId
+
 export const getInspected = (state) => {
-  const inspectedId = getUi(state).inspectedHoverId || getUi(state).inspectedClickId
-  return getCandidates(state).find(c => c.nameWithOwner === inspectedId)
+  const inspectedId = getInspectedId(state)
+  return inspectedId && getCandidates(state).find(c => c.nameWithOwner === inspectedId)
 }

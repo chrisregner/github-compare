@@ -3,17 +3,18 @@ import React from 'react'
 import { Route } from 'react-router-dom'
 import SearchContainer from 'app/sections/SearchContainer'
 import CompareContainer from 'app/sections/CompareContainer'
-import NavContainer from 'app/sections/NavContainer'
+import Header from 'app/sections/Header'
 
 const App = () =>
-  <div className='flex flex-column pv3 pv4-l min-vh-100 near-black sans-serif'>
-    <div className='center mb3 ph3 ph4-l mw7 w-100 flex'>
-      <h1 className='normal f3'>GitHub Search App</h1>
-      <NavContainer className='flex-auto tr' />
+  <div className='flex near-black sans-serif'>
+    <div className='mw5 w-100'>
+      <Header className='fixed mw5 w-100' />
     </div>
 
-    <Route exact path='/' component={SearchContainer} />
-    <Route path='/compare' component={CompareContainer} />
+    <div className='flex-auto mw8'>
+      <Route exact path='/' component={SearchContainer} />
+      <Route path='/compare/:cat?/:type?' component={CompareContainer} />
+    </div>
 
     <style jsx global>{`
       /* base global styles */

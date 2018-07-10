@@ -1,3 +1,10 @@
+- mouseover handler
+- mouseover show button
+- active hide button
+- active grow
+- active infos
+- active/hide transition
+
 # todo
 
 - compare page
@@ -12,12 +19,14 @@
   - add/remove repo
   - handle resize
   - graph init animation
-- add collaboratorsCount in repo component
+- add collaboratorsCount in repo and bar graph component
+- candidates page
 - limit candidates to 10
 - handle 0 candidates
 - 404
 - add proper README.md (explain original purpose)
 - add it to portfolio
+- responsive
 
 # enhancements
 

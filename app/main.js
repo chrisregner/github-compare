@@ -7,7 +7,7 @@ import { createStore } from 'redux'
 import { BrowserRouter } from 'react-router-dom'
 import reducer from 'app/state'
 import App from './App'
-import client from './api'
+import client from 'app/services/api'
 
 const store = createStore(
   reducer,
