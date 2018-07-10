@@ -1,4 +1,4 @@
 import { withRouter } from 'react-router-dom'
-import Nav from './NavContainer/Nav'
+import Nav from './Nav'
 
 export default withRouter(Nav)

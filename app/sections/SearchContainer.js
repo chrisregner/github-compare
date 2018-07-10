@@ -3,7 +3,7 @@ import { graphql } from 'react-apollo'
 import { connect } from 'react-redux'
 import { pick } from 'ramda'
 import gql from 'graphql-tag'
-import Search from './SearchContainer/Search'
+import Search from './Search'
 import { toggleCandidate, getIds } from 'app/state/candidates'
 
 const SEARCH_REPO_QUERY = gql`

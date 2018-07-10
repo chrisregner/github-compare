@@ -16,10 +16,10 @@ const BG_COLOR = '#f4f4f4'
 
 const PieChart = ({
   chart,
-  typeName,
+  typeTitle,
 }) =>
   <div>
-    <h2 className='mb3 f3 tc'>{typeName} Pie Chart</h2>
+    <h2 className='mb3 f3 tc'>{typeTitle} Pie Chart</h2>
     {chart}
   </div>
 
@@ -152,13 +152,16 @@ PieChart.propTypes = {
     id: PropTypes.string.isRequired,
     toggleClickInspect: PropTypes.func.isRequired,
     toggleHoverInspect: PropTypes.func.isRequired,
-    value: PropTypes.object.isRequired,
+    value: PropTypes.arrayOf(PropTypes.shape({
+      value: PropTypes.number.isRequired,
+      title: PropTypes.string.isRequired,
+    })).isRequired,
   })).isRequired,
   chart: PropTypes.node,
   connectFauxDOM: PropTypes.func.isRequired,
   drawFauxDOM: PropTypes.func.isRequired,
   inspectedCandidateId: PropTypes.string,
-  typeName: PropTypes.string.isRequired,
+  typeTitle: PropTypes.string.isRequired,
   width: PropTypes.number.isRequired,
 }
 

@@ -1,4 +1,3 @@
-- mouseover handler
 - mouseover show button
 - active hide button
 - active grow
