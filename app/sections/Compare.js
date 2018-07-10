@@ -23,8 +23,8 @@ const Compare = ({ candidatesCount, inspectedCandidate, ...props }) =>
         ._inspected-wrapper { min-height: 7rem; }
       `}</style>
     </div>
-    : <div className='gray'>
-    Please select candidates first.
+    : <div className='pa4 gray'>
+      Please select candidates first.
     </div>
 
 Compare.propTypes = {
