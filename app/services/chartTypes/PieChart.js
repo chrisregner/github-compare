@@ -24,7 +24,6 @@ const PieChart = ({
   <div>
     <h2 className='mb4 f3'>{typeTitle} Pie Chart</h2>
     <svg ref={setSvgRef} />
-    {/* {chart} */}
   </div>
 
 const enhance = compose(
@@ -34,19 +33,19 @@ const enhance = compose(
 
   lifecycle({
     componentDidUpdate: function (prevProps) {
+      // Initial render
       if (!this.hasRendered) {
         this.updateInspected = () => updateInspected(this)
         drawChart(this)
         this.hasRendered = true
-      } else {
-        // If candidates has changed...
-        // if (prevProps.candidates !== this.props.candidates)
-        //   drawChart(this)
 
-        // Else, if inspected candidate has changed and the chart is NOT animating
-        // (inspected would be automatically updated every time an animation finishes)
-        /* else */ if (checkInspectUpdated(prevProps, this.props) && !this.isTransitioning)
-          this.updateInspected()
+      // Chart rewrite (candidates has changed)
+      } else if (prevProps.candidates !== this.props.candidates) {
+        drawChart(this)
+
+      // Update inspected (candidate has been hovered/clicked)
+      } else if (checkInspectUpdated(prevProps, this.props) && !this.t) {
+        this.updateInspected()
       }
     },
   })
@@ -67,7 +66,7 @@ PieChart.propTypes = {
   inspectedClickId: PropTypes.string,
   inspectedId: PropTypes.string,
   setSvgRef: PropTypes.func.isRequired,
-  svgRef: PropTypes.node,
+  svgRef: PropTypes.object,
   typeTitle: PropTypes.string.isRequired,
   width: PropTypes.number.isRequired,
 }
@@ -81,11 +80,11 @@ const drawChart = (inst) => {
     svgRef,
   } = inst.props
 
-  inst.isTransitioning = true
-
+  svgRef.innerHTML = '' // Remove any previous chart
   svgRef.setAttribute('width', '100%')
   svgRef.setAttribute('height', GROSS_DIAMETER)
 
+  const svg = d3.select(svgRef)
   let mappedData = {
     name: 'candidates',
     children: candidates.map(({ value, ...cand }) => ({
@@ -94,6 +93,13 @@ const drawChart = (inst) => {
       valueTitles: value.map(val => val.title),
       ...cand,
     })),
+  }
+
+  // Interrupt any ongoing transition
+  // (usually an unfinished transition from pie chart of another data)
+  if (inst.t) {
+    inst.t = null
+    svg.interrupt()
   }
 
   // Add wrapper; translate to take account for padding
@@ -105,12 +111,11 @@ const drawChart = (inst) => {
     })
 
   // Save transition instance
-  const t = wrapper.transition()
+  const t = svg.transition()
     .duration(DURATION)
-    .on('end', () => {
-      inst.isTransitioning = false
-      inst.updateInspected(inst)
-    })
+    .on('end', () => inst.updateInspected(inst, DURATION / 4))
+
+  inst.t = t
 
   // Apply hierarchy to data
   const rootData = d3.hierarchy(mappedData)
@@ -142,13 +147,10 @@ const drawChart = (inst) => {
     .data(piesData)
     .enter()
     .append('g')
-    .attrs({
-      class: 'pie',
-      cursor: 'pointer',
-    })
-    .on('click', d => !inst.isTransitioning && d.data.toggleClickInspect())
-    .on('mouseenter', d => !inst.isTransitioning && d.data.toggleHoverInspect())
-    .on('mouseleave', d => !inst.isTransitioning && d.data.unhoverInspect())
+    .attrs({ class: 'pie', cursor: 'pointer' })
+    .on('click', d => !inst.t && d.data.toggleClickInspect())
+    .on('mouseenter', d => !inst.t && d.data.toggleHoverInspect())
+    .on('mouseleave', d => !inst.t && d.data.unhoverInspect())
 
   // Add the slices; animate;
   pies.selectAll('.slice')
@@ -163,11 +165,14 @@ const drawChart = (inst) => {
       d: arc.outerRadius(0).innerRadius(0),
     }))
     .transition(t)
-    .attrTween('d', appearTween)
+    .attrTween('d', tweenAppear)
 
   // Add the issues count
   const info = pies.append('g')
-    .attr('class', 'info')
+    .attrs({
+      class: 'info',
+      opacity: 0,
+    })
   info.append('rect')
     .attrs(({ x, y, value }) => {
       const infoTxtDim = getTextDimension(value, 'ttu sans-serif', { fontSize: '.625rem' })
@@ -193,6 +198,8 @@ const drawChart = (inst) => {
       fill: 'white',
     }))
     .text(d => d.value)
+  info.transition(t)
+    .attr('opacity', 1)
 
   // Add the (hidden) show button
   const showBtnTxtDim = getTextDimension('Show Details', 'ttu sans-serif', { fontSize: '.625rem' })
@@ -224,7 +231,7 @@ const drawChart = (inst) => {
     .text('Show Details')
 }
 
-const updateInspected = (inst) => {
+const updateInspected = (inst, delay = 0) => {
   const {
     inspectedClickId,
     inspectedId,
@@ -235,19 +242,18 @@ const updateInspected = (inst) => {
   const pies = svg.selectAll('.pie')
   const hasPreviouslyClicked = svg.selectAll('.pie.clicked').size()
 
+  // Create transition instance
+  const t = svg.transition()
+    .delay(delay)
+    .duration(DURATION)
+    .on('end', () => { inst.t = null })
+
   // Flag if transitioning (to block other update until it finishes)
   if (
     (inspectedClickId && !svg.select('.clicked').size())
     || (!inspectedClickId && svg.select('.clicked').size())
   )
-    inst.isTransitioning = true
-
-  // Create transition instance
-  const t = svg.transition()
-    .duration(DURATION)
-    .on('end', () => {
-      inst.isTransitioning = false
-    })
+    inst.t = t
 
   // Raise the inspected
   pies.filter(d => d.data.id === inspectedId)
@@ -263,11 +269,13 @@ const updateInspected = (inst) => {
   const info = pies.select('.info')
   if (inspectedClickId) {
     // Immediately hide the clicked
-    info.filter(d => d.data.id === inspectedId)
+    info.filter(d => d.data.id === inspectedClickId)
+      .transition(t)
+      .duration(0)
       .attr('opacity', 0)
 
     // Fade out those that aren't clicked
-    info.filter(d => d.data.id !== inspectedId)
+    info.filter(d => d.data.id !== inspectedClickId)
       .transition(t)
       .attr('opacity', 0)
   } else if (hasPreviouslyClicked) {
@@ -284,27 +292,27 @@ const updateInspected = (inst) => {
     .attrTween('transform', tweenToMiddle)
     .attrTween('d', tweenGrow)
 
-  // Nonclicked pies (shrink)
+  // Nonclicked pies (when clicked, disappear)
   if (inspectedClickId)
     pies.filter(d => d.data.id !== inspectedId)
       .selectAll('.slice')
       .transition(t)
-      .attrTween('d', tweenShrink)
+      .attrTween('d', tweenDisappear)
 
-  // Unclicked
+  // Unclicked pies (revert grow, move to original position)
   svg.selectAll('.pie.clicked')
     .filter(d => d.id !== inspectedClickId).selectAll('.slice')
     .transition(t)
     .attrTween('transform', tweenToOrigPos)
     .attrTween('d', tweenRevertGrow)
 
-  // Undo nonclicked
+  // Nonclicked pies (when unclicked, reappear)
   if (hasPreviouslyClicked)
     svg.selectAll('.pie:not(.clicked)')
       .filter(d => d.data.id !== inspectedId)
       .selectAll('.slice')
       .transition(t)
-      .attrTween('d', appearTween)
+      .attrTween('d', tweenAppear)
 
   // Apply appropriate classes
   pies.classed('hovered', d => !inspectedClickId && d.data.id === inspectedId)
@@ -344,7 +352,7 @@ const tweenGrow = (d, i) => {
   return a => arc.outerRadius(grow(a)).innerRadius(0)(d)
 }
 
-const tweenShrink = (d, i) => {
+const tweenDisappear = (d, i) => {
   const shrinkIntrpl = d3.interpolate(varyRadius(d.r, i), 0)
   return a => arc.outerRadius(shrinkIntrpl(a)).innerRadius(0)(d)
 }
@@ -355,7 +363,7 @@ const tweenToOrigPos = (d) => {
   return a => `translate(${transX(a)}, ${transY(a)})`
 }
 
-const appearTween = (d, i) => {
+const tweenAppear = (d, i) => {
   const appear = d3.interpolate(0, varyRadius(d.r, i))
   return a => arc.outerRadius(appear(a)).innerRadius(0)(d)
 }

@@ -1,8 +1,6 @@
 # now
 - show details
 - hide details
-- delay before immediate grow
-- handle change data
 
 # todo
 
