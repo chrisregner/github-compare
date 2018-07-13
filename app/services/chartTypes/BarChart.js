@@ -1,14 +1,14 @@
 /* eslint-disable react/no-unused-prop-types */
 
-import React from 'react'
-import { withFauxDOM } from 'react-faux-dom'
-import PropTypes from 'prop-types'
-import * as d3 from 'd3'
-import withContainerWidth from 'app/utils/withContainerWidth'
-import lighten from 'app/utils/lighten'
 import { compose, lifecycle } from 'recompose'
+import { lighten } from 'app/services/colors'
+import { withFauxDOM } from 'react-faux-dom'
+import * as d3 from 'd3'
+import PropTypes from 'prop-types'
+import React from 'react'
+import withContainerWidth from 'app/utils/withContainerWidth'
 
-const HEIGHT = 300
+const HEIGHT = 400
 const MARGIN = { top: 25, bottom: 10, left: 50, right: 0 }
 const BAR_PADDING_PCT = 0.25
 const HIGHLIGHT_SIZE = 5
@@ -19,7 +19,7 @@ const BarChart = ({
   typeTitle,
 }) =>
   <React.Fragment>
-    <h2 className='mb3 f3 tc'>{typeTitle} Count</h2>
+    <h2 className='mb4 f3'>{typeTitle} Count</h2>
     {chart}
     <style jsx global>{`
       .axis-y-grid line {
@@ -71,7 +71,7 @@ const drawChart = (inst) => {
     // Add the main wrapper
     const wrapperSel = d3.select(svg)
       .append('g')
-      .attr('transform', 'translate(' + MARGIN.left + ',' + MARGIN.top + ')')
+      .attr('transform', `translate(${MARGIN.left}, ${MARGIN.top})`)
 
     // Add y axis element
     axisYGridSel = wrapperSel.append('g')
@@ -88,19 +88,27 @@ const drawChart = (inst) => {
       .attr('class', 'candidate')
       .on('click', d => d.toggleClickInspect())
       .on('mouseenter', d => d.toggleHoverInspect())
-      .on('mouseleave', d => d.toggleHoverInspect())
+      .on('mouseleave', d => d.unhoverInspect())
 
     // Create transition instance
     t = candidatesSel.transition()
       .duration(DURATION)
       .on('end', () => {
-        delete inst.t
-        inst.updateHighlight()
+        inst.tEndCount++
+
+        if (inst.tEndCount === candidates.length) {
+          delete inst.t
+          inst.updateInspected(inst)
+        }
       })
+
+    inst.t = t
+    inst.tEndCount = 0
 
     // Add the bar elements; set properties unique to first render; get its transition instance
     barsTrans = candidatesSel.append('rect')
       .attr('class', 'bar')
+      .attr('cursor', 'pointer')
       .attr('width', x.bandwidth())
       .attr('height', 0)
       .attr('x', d => x(d.id))
@@ -133,15 +141,12 @@ const drawChart = (inst) => {
       .data(candidates) // data should be updated before selecting its descendants
     valuesSel = candidatesSel.select('text')
 
-    // Get bar transition instance
-    barsTrans = candidatesSel.select('.bar').transition(t)
-
     // Create transition instance
     t = candidatesSel.transition()
       .duration(DURATION)
       .on('end', () => {
         delete inst.t
-        inst.updateHighlight()
+        inst.updateInspected()
       })
 
     // Get bars transition instance; do updates/animations that are unique to update scenario
@@ -176,13 +181,12 @@ const drawChart = (inst) => {
   inst.innerHt = innerHt
   inst.x = x
   inst.y = y
-  inst.t = t
 
   // Animate changes to React
   animateFauxDOM(1000)
 }
 
-const updateHighlight = (inst) => {
+const updateInspected = (inst) => {
   const {
     connectFauxDOM,
     animateFauxDOM,
@@ -207,7 +211,7 @@ const updateHighlight = (inst) => {
 
     toHighlightSel.insert('rect', ':first-child')
       .attr('class', 'highlight')
-      .attr('fill', d => lighten(0.125, d.color))
+      .attr('fill', d => lighten(d.color))
       .attr('rx', HIGHLIGHT_SIZE)
       .attr('ry', HIGHLIGHT_SIZE)
       .attr('height', d => innerHt - y(d.value))
@@ -282,6 +286,7 @@ BarChart.propTypes = {
     id: PropTypes.string.isRequired,
     toggleClickInspect: PropTypes.func.isRequired,
     toggleHoverInspect: PropTypes.func.isRequired,
+    unhoverInspect: PropTypes.func.isRequired,
     value: PropTypes.number.isRequired,
   })).isRequired,
   chart: PropTypes.node,
@@ -299,7 +304,7 @@ export default compose(
   lifecycle({
     componentDidMount: function () {
       drawChart(this)
-      this.updateHighlight = () => updateHighlight(this)
+      this.updateInspected = () => updateInspected(this)
     },
 
     componentDidUpdate: function (prevProps) {
@@ -312,7 +317,7 @@ export default compose(
       // Else, if inspected candidate has changed and the chart is NOT animating
       // Note: highlight would be automatically updated every time a draw finishes
       else if ((prevProps.inspectedId !== this.props.inspectedId) && !this.t)
-        this.updateHighlight()
+        this.updateInspected()
     },
   }),
 )(BarChart)

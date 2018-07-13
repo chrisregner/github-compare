@@ -1,7 +1,14 @@
 import { compose, withProps } from 'recompose'
 import { connect } from 'react-redux'
 import { getCandidates } from 'app/state/candidates'
-import { getInspectedId, toggleClickInspect, toggleHoverInspect } from 'app/state/ui'
+import {
+  getInspectedId,
+  getInspectedClickId,
+  getInspectedHoverId,
+  toggleClickInspect,
+  toggleHoverInspect,
+  unhoverInspect,
+} from 'app/state/ui'
 import chartTypes from 'app/services/chartTypes'
 import React from 'react'
 import withStyleableContainer from 'app/utils/withStyleableContainer'
@@ -11,14 +18,16 @@ export default compose(
   withStyleableContainer,
 
   connect(
-    (state, ownProps) => ({
+    state => ({
       candidates: getCandidates(state),
       inspectedId: getInspectedId(state),
+      inspectedClickId: getInspectedClickId(state),
+      inspectedHoverId: getInspectedHoverId(state),
     }),
-    { toggleClickInspect, toggleHoverInspect },
+    { toggleClickInspect, toggleHoverInspect, unhoverInspect },
   ),
 
-  withProps(({ match, candidates, toggleClickInspect, toggleHoverInspect }) => {
+  withProps(({ match, candidates, toggleClickInspect, toggleHoverInspect, unhoverInspect }) => {
     const cat = match.params.cat
       ? chartTypes.getCatByKey(match.params.cat)
       : chartTypes.getDefaultCat()
@@ -27,7 +36,11 @@ export default compose(
       : chartTypes.getDefaultType(cat.key)
 
     return {
-      candidates: cachedMapCandidates(candidates, type, toggleClickInspect, toggleHoverInspect),
+      candidates: cachedMapCandidates(candidates, type, {
+        toggleClickInspect,
+        toggleHoverInspect,
+        unhoverInspect,
+      }),
       Component: cat.component,
       typeTitle: type.title,
     }
@@ -42,15 +55,15 @@ export default compose(
  */
 const cachedMapCandidates = R.memoizeWith(
   (candidates, type) => JSON.stringify(candidates) + type.key,
-  (candidates, type, toggleClickInspect, toggleHoverInspect) =>
-    candidates.map((cand, i) => ({
+  (candidates, type, actions) =>
+    candidates.map(cand => ({
       id: cand.nameWithOwner,
+      name: cand.name,
       value: type.valueKeys
         ? type.valueKeys.map(keyInfo =>
           ({ value: cand[keyInfo.key], title: keyInfo.title }))
         : cand[type.key],
       color: cand.color,
-      toggleClickInspect: () => toggleClickInspect(cand.nameWithOwner),
-      toggleHoverInspect: () => toggleHoverInspect(cand.nameWithOwner),
+      ...R.mapObjIndexed(action => action.bind(null, cand.nameWithOwner), actions),
     }))
       .sort((a, b) => a.value < b.value))

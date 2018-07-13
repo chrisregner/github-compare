@@ -8,21 +8,33 @@ const CHART_TYPES = [
     title: 'Bar Charts',
     component: BarChart,
     types: [
+      { title: 'Stars', key: 'stargazerCount' },
+      { title: 'Forks', key: 'forkCount' },
+      { title: 'Open Issues', key: 'openIssueCount' },
+      { title: 'Watchers', key: 'watcherCount' },
+    ],
+  },
+  {
+    key: 'pie',
+    title: 'Pie Charts',
+    component: PieChart,
+    types: [
       {
-        title: 'Stars',
-        key: 'stargazerCount',
+        key: 'issues',
+        title: 'Issues',
+        valueKeys: [
+          { key: 'closedIssueCount', title: 'Closed' },
+          { key: 'openIssueCount', title: 'Open' },
+        ],
       },
       {
-        title: 'Forks',
-        key: 'forkCount',
-      },
-      {
-        title: 'Open Issues',
-        key: 'openIssueCount',
-      },
-      {
-        title: 'Watchers',
-        key: 'watcherCount',
+        key: 'pullReqs',
+        title: 'Pull Requests',
+        valueKeys: [
+          { key: 'mergedPullReqCount', title: 'Merged' },
+          { key: 'closedPullReqCount', title: 'Closed' },
+          { key: 'openPullReqCount', title: 'Open' },
+        ],
       },
     ],
   },
@@ -36,30 +48,6 @@ const CHART_TYPES = [
         valueKeys: [
           { key: 'createdAt', title: 'Created At' },
           { key: 'updatedAt', title: 'Updated At' },
-        ],
-      },
-    ],
-  },
-  {
-    key: 'pie',
-    title: 'Pie Charts',
-    component: PieChart,
-    types: [
-      {
-        key: 'pullReqs',
-        title: 'Pull Requests',
-        valueKeys: [
-          { key: 'mergedPullReqCount', title: 'Merged' },
-          { key: 'closedPullReqCount', title: 'Closed' },
-          { key: 'openPullReqCount', title: 'Open' },
-        ],
-      },
-      {
-        key: 'issues',
-        title: 'Issues',
-        valueKeys: [
-          { key: 'closedIssueCount', title: 'Closed' },
-          { key: 'openIssueCount', title: 'Open' },
         ],
       },
     ],

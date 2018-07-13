@@ -1,6 +1,6 @@
 import { handleActions, createAction } from 'redux-actions'
 import * as fromState from 'app/state'
-import { colors } from 'app/constants'
+import colors from 'app/services/colors'
 
 /* Action Types */
 const TOGGLE_CANDIDATE = 'gihub-search/candidates/TOGGLE_CANDIDATE'

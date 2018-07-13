@@ -1,8 +1,8 @@
-- mouseover show button
-- active hide button
-- active grow
-- active infos
-- active/hide transition
+# now
+- show details
+- hide details
+- delay before immediate grow
+- handle change data
 
 # todo
 
@@ -19,13 +19,17 @@
   - handle resize
   - graph init animation
 - add collaboratorsCount in repo and bar graph component
-- candidates page
+- candidates page?
 - limit candidates to 10
 - handle 0 candidates
 - 404
-- add proper README.md (explain original purpose)
-- add it to portfolio
+- pinned icon
+- icon to chart titles and navs
 - responsive
+- optimize bar chart (transition end is called 10 times)
+- add proper README.md (explain original purpose)
+- 'flash of unrendered svg'
+- add it to portfolio
 
 # enhancements
 
@@ -33,3 +37,4 @@
 - add other bar graph criterions (pull reqs?/collaborator?/closed issues?) bar graph
 - improve bar graphs highlight (remove bottom border)
 - handle width change in bar graphs
+- remove react faux dom
