@@ -1,4 +1,5 @@
 # now
+- set visibility of labels after fade in/out
 - show details
 - hide details
 

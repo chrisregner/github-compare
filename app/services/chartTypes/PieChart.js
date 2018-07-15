@@ -12,10 +12,15 @@ import withStyleableContainer from 'app/utils/withStyleableContainer'
 const GROSS_DIAMETER = 400
 const DIAMETER = GROSS_DIAMETER * 0.875
 const PADDING = (GROSS_DIAMETER - DIAMETER) / 2
-const BTN_PADDING = 2
-const BG_COLOR = '#333'
+const TEXT_COLOR = '#333'
+const BG_COLOR = '#fff'
 const DURATION = 750
 const MIDDLE = DIAMETER / 2
+const FONT_SM = '.75rem'
+const centerTextAttrs = {
+  'alignment-baseline': 'middle',
+  'text-anchor': 'middle',
+}
 
 const PieChart = ({
   setSvgRef,
@@ -23,7 +28,7 @@ const PieChart = ({
 }) =>
   <div>
     <h2 className='mb4 f3'>{typeTitle} Pie Chart</h2>
-    <svg ref={setSvgRef} />
+    <svg className='b' ref={setSvgRef} />
   </div>
 
 const enhance = compose(
@@ -35,7 +40,6 @@ const enhance = compose(
     componentDidUpdate: function (prevProps) {
       // Initial render
       if (!this.hasRendered) {
-        this.updateInspected = () => updateInspected(this)
         drawChart(this)
         this.hasRendered = true
 
@@ -45,7 +49,7 @@ const enhance = compose(
 
       // Update inspected (candidate has been hovered/clicked)
       } else if (checkInspectUpdated(prevProps, this.props) && !this.t) {
-        this.updateInspected()
+        updateInspected(this)
       }
     },
   })
@@ -89,7 +93,8 @@ const drawChart = (inst) => {
     name: 'candidates',
     children: candidates.map(({ value, ...cand }) => ({
       name: cand.name,
-      values: value.map(val => val.value),
+      rawValue: value,
+      value: value.map(x => x.value).reduce(R.add),
       valueTitles: value.map(val => val.title),
       ...cand,
     })),
@@ -97,10 +102,7 @@ const drawChart = (inst) => {
 
   // Interrupt any ongoing transition
   // (usually an unfinished transition from pie chart of another data)
-  if (inst.t) {
-    inst.t = null
-    svg.interrupt()
-  }
+  svg.interrupt()
 
   // Add wrapper; translate to take account for padding
   const wrapper = d3.select(svgRef)
@@ -113,16 +115,13 @@ const drawChart = (inst) => {
   // Save transition instance
   const t = svg.transition()
     .duration(DURATION)
-    .on('end', () => inst.updateInspected(inst, DURATION / 4))
+    .on('end', () => updateInspected(inst, DURATION / 4))
 
   inst.t = t
 
   // Apply hierarchy to data
   const rootData = d3.hierarchy(mappedData)
-    .sum(d =>
-      d.values
-        ? d.values.reduce((sum, val) => sum + val, 0)
-        : null)
+    .sum(d => d.value)
     .sort((a, b) => b.value - a.value)
 
   // Apply pack layout to data
@@ -173,60 +172,37 @@ const drawChart = (inst) => {
       class: 'info',
       opacity: 0,
     })
-  info.append('rect')
-    .attrs(({ x, y, value }) => {
-      const infoTxtDim = getTextDimension(value, 'ttu sans-serif', { fontSize: '.625rem' })
-
-      return {
-        fill: 'black',
-        x: x - ((infoTxtDim.width / 2) + BTN_PADDING),
-        y: y - ((infoTxtDim.height / 2) + BTN_PADDING) - 1, // - 1 for descender (typography)
-        width: infoTxtDim.width + (BTN_PADDING * 2),
-        height: infoTxtDim.height + (BTN_PADDING * 2),
-        rx: 3,
-        ry: 3,
-        opacity: '.5',
-      }
-    })
   info.append('text')
     .style('text-transform', 'uppercase')
     .attrs(({ x, y }) => ({
       x, y,
-      'alignment-baseline': 'middle',
-      'font-size': '.625rem',
-      'text-anchor': 'middle',
-      fill: 'white',
+      ...centerTextAttrs,
+      'font-size': FONT_SM,
+      'paint-order': 'stroke',
+      'stroke-width': 2,
+      fill: TEXT_COLOR,
+      stroke: BG_COLOR,
     }))
     .text(d => d.value)
   info.transition(t)
     .attr('opacity', 1)
 
   // Add the (hidden) show button
-  const showBtnTxtDim = getTextDimension('Show Details', 'ttu sans-serif', { fontSize: '.625rem' })
   const showBtn = pies.append('g')
     .attrs({
       class: 'show-btn',
-      opacity: 0,
+      visibility: 'hidden',
     })
-  showBtn.append('rect')
-    .attrs(d => ({
-      fill: '#1971c2',
-      x: d.x - ((showBtnTxtDim.width / 2) + BTN_PADDING),
-      y: d.y - ((showBtnTxtDim.height / 2) + BTN_PADDING) - 1, // -1 is for descender (typography)
-      width: showBtnTxtDim.width + (BTN_PADDING * 2),
-      height: showBtnTxtDim.height + (BTN_PADDING * 2),
-      opacity: '.9',
-      rx: 3,
-      ry: 3,
-    }))
   showBtn.append('text')
     .style('text-transform', 'uppercase')
     .attrs(({ x, y }) => ({
       x, y,
-      fill: 'white',
-      'alignment-baseline': 'middle',
-      'font-size': '.625rem',
-      'text-anchor': 'middle',
+      ...centerTextAttrs,
+      'font-size': FONT_SM,
+      'paint-order': 'stroke',
+      'stroke-width': 2,
+      fill: TEXT_COLOR,
+      stroke: BG_COLOR,
     }))
     .text('Show Details')
 }
@@ -246,7 +222,12 @@ const updateInspected = (inst, delay = 0) => {
   const t = svg.transition()
     .delay(delay)
     .duration(DURATION)
-    .on('end', () => { inst.t = null })
+    .on('end', () => {
+      // NOTE: if there is no clicked candidate,
+      // transition will be deleted after the mail labels appears
+      if (!inspectedClickId)
+        inst.t = null
+    })
 
   // Flag if transitioning (to block other update until it finishes)
   if (
@@ -259,11 +240,10 @@ const updateInspected = (inst, delay = 0) => {
   pies.filter(d => d.data.id === inspectedId)
     .raise()
 
-  // Show Button
+  // Show Button (visible when hover inspected and NONE is clicked)
   pies.select('.show-btn')
-    .attr('opacity', d =>
-      !inspectedClickId && (d.data.id === inspectedId) // hover inspected but NOT clicked
-        ? 1 : 0)
+    .attr('visibility', d =>
+      !inspectedClickId && (d.data.id === inspectedId) ? 'visible' : 'hidden')
 
   // Info Button
   const info = pies.select('.info')
@@ -272,47 +252,192 @@ const updateInspected = (inst, delay = 0) => {
     info.filter(d => d.data.id === inspectedClickId)
       .transition(t)
       .duration(0)
-      .attr('opacity', 0)
+      .attrs({
+        opacity: 0,
+        visibility: 'none',
+      })
 
     // Fade out those that aren't clicked
     info.filter(d => d.data.id !== inspectedClickId)
       .transition(t)
       .attr('opacity', 0)
+      .on('end', function () {
+        d3.select(this).attr('visibility', 'hidden')
+      })
   } else if (hasPreviouslyClicked) {
     info.transition(t)
-      .attr('opacity', 1)
+      .attrs({
+        opacity: 1,
+        visibility: 'visible',
+      })
   } else {
-    info.attr('opacity', 1)
+    info.attrs(d => ({
+      opacity: 1,
+      visibility: d.data.id === inspectedId ? 'hidden' : 'visible',
+    }))
   }
 
-  // Clicked pies (Grow and move to middle)
-  pies.filter(d => d.data.id === inspectedClickId)
-    .selectAll('.slice')
-    .transition(t)
-    .attrTween('transform', tweenToMiddle)
-    .attrTween('d', tweenGrow)
+  if (inspectedClickId) {
+    let totalPct = 0
+    const clickedPies = pies.filter(d => d.data.id === inspectedClickId)
+    const clickedSlices = clickedPies.selectAll('.slice')
+    const details = clickedPies.append('g').attrs({ class: 'details', opacity: 1 })
+    const centerLabelAttrs
+      = {
+        ...centerTextAttrs,
+        'font-size': FONT_SM,
+        class: 'center-label ttu',
+        fill: TEXT_COLOR,
+        opacity: 0,
+        x: MIDDLE,
+        y: MIDDLE,
+      }
+    const total = clickedSlices.data()
+      .map(d => d.value)
+      .reduce(R.add)
+    const slicesData = clickedSlices.data()
+      .filter(d => d.value > 0)
+      .map((d) => {
+        const pct = d.value / total
+        totalPct += pct
+        const labelPosPct = (((1 - pct) / 2) + totalPct) % 1
+        const shouldReverse = labelPosPct <= 0.25 || labelPosPct >= 0.75
+        return { ...d, labelPosPct, shouldReverse }
+      })
 
-  // Nonclicked pies (when clicked, disappear)
+    // Grow and move clicked pies to middle
+    clickedSlices
+      .transition(t)
+      .attrTween('transform', tweenToMiddle)
+      .attrTween('d', tweenGrow)
+
+    // Add the center labels
+    details.append('text')
+      .text(inst.props.typeTitle)
+      .attrs({ ...centerLabelAttrs, dy: '-6%' })
+    details.append('text')
+      .text(d => d.data.name)
+      .attrs({ ...centerLabelAttrs, dy: '-2%' })
+    details.append('text')
+      .text(d => d.value + ' Total')
+      .attrs({ ...centerLabelAttrs, dy: '2%' })
+    details.append('text')
+      .text('(Click to hide)')
+      .attrs({
+        ...centerLabelAttrs,
+        dy: '6%',
+        fill: 'gray',
+        'font-size': '.625rem',
+      })
+
+    // Add the slice label arc
+    details.selectAll('.slice-label-arc')
+      .data(slicesData)
+      .enter()
+      .append('path')
+      .attrs((d, i) => {
+        const maxSliceRadius = varyRadius(DIAMETER / 2, i)
+        let arcD = d3.arc()
+          .innerRadius(0)
+          .outerRadius(maxSliceRadius)
+          .startAngle(0)
+          .endAngle(Math.PI * 2)()
+
+        if (d.shouldReverse) {
+          const commands = /M(.*?)A(.*?)A(.*?)Z/
+          const [_, move, arcA, arcB] = commands.exec(arcD) // eslint-disable-line no-unused-vars
+          const arcAReversed = arcA.split(',').map((v, i) => i === 4 ? '0' : v)
+          const arcBReversed = arcB.split(',').map((v, i) => i === 4 ? '0' : v)
+          arcD = `M${move}A${arcAReversed.join(',')}A${arcBReversed.join(',')}Z`
+        }
+
+        return {
+          id: 'slice-label-arc-' + i,
+          class: 'slice-label-arc',
+          transform: `translate(${MIDDLE}, ${MIDDLE})
+            rotate(${(d.labelPosPct * 360)})`,
+          d: arcD,
+          visibility: 'hidden',
+        }
+      })
+
+    // Add the slice label text
+    details.selectAll('.slice-label')
+      .data(slicesData)
+      .enter()
+      .append('text')
+      .attrs(d => ({
+        class: 'slice-label ttu',
+        dy: DIAMETER * (d.shouldReverse ? 0.015 : -0.015),
+        opacity: 0,
+      }))
+      .append('textPath')
+        .attrs((d, i) => ({
+          'alignment-baseline': d.shouldReverse ? 'hanging' : 'baseline',
+          'font-size': FONT_SM,
+          'paint-order': 'stroke',
+          'stroke-width': 2,
+          'text-anchor': 'middle',
+          'xlink:href': '#slice-label-arc-' + i,
+          fill: TEXT_COLOR,
+          startOffset: '50%',
+          stroke: BG_COLOR,
+        }))
+        .text((d) => {
+          const pct = Math.round(d.data.value / total * 1000) / 10
+          return `${d.data.value} ${d.data.name} (${pct}%)`
+        })
+
+    // Animate the details
+    details.selectAll('.center-label')
+      .transition()
+      .duration(DURATION / 2)
+      .delay(DURATION)
+      .attr('opacity', 1)
+
+    details.selectAll('.slice-label')
+      .transition()
+      .duration(DURATION / 2)
+      .delay((d, i) => (DURATION / 2) * (i + 3))
+      .attr('opacity', 1)
+      .on('end', (d, i) => {
+        // Flag that the transition has ended to stop blocking updates
+        if (i === slicesData.length - 1)
+          inst.t = null
+      })
+  }
+
+  // Banish nonclicked pies
   if (inspectedClickId)
     pies.filter(d => d.data.id !== inspectedId)
       .selectAll('.slice')
       .transition(t)
       .attrTween('d', tweenDisappear)
 
-  // Unclicked pies (revert grow, move to original position)
+  // When unclicked, revert size and position of unclicked pies
   svg.selectAll('.pie.clicked')
     .filter(d => d.id !== inspectedClickId).selectAll('.slice')
     .transition(t)
     .attrTween('transform', tweenToOrigPos)
     .attrTween('d', tweenRevertGrow)
 
-  // Nonclicked pies (when unclicked, reappear)
+  // When unclicked, show non clicked pies
   if (hasPreviouslyClicked)
     svg.selectAll('.pie:not(.clicked)')
       .filter(d => d.data.id !== inspectedId)
       .selectAll('.slice')
       .transition(t)
       .attrTween('d', tweenAppear)
+
+  // Banish details
+  if (hasPreviouslyClicked && !inspectedClickId)
+    svg.selectAll('.details')
+      .transition(t)
+      .duration(DURATION / 2)
+      .attr('opacity', 0)
+      .on('end', () => {
+        svg.selectAll('.details').remove()
+      })
 
   // Apply appropriate classes
   pies.classed('hovered', d => !inspectedClickId && d.data.id === inspectedId)
@@ -331,12 +456,40 @@ const checkInspectUpdated = (prevProps, newProps) =>
   || (prevProps.inspectedClickId !== newProps.inspectedClickId)
 
 const circleToSlices = (circ) => {
-  const slices = Object.values(circ.data.values)
-    .map(value =>
-      ({ value, color: circ.data.color }))
+  const slices = circ.data.rawValue.map(({ value, title }) =>
+    ({
+      value,
+      name: title,
+      color: circ.data.color,
+    }))
 
   return applyPieLayout(slices).map(slice =>
     ({ ...circ, ...slice }))
+}
+const tweenAppear = (d, i) => {
+  const appear = d3.interpolate(0, varyRadius(d.r, i))
+  return a => arc.outerRadius(appear(a)).innerRadius(0)(d)
+}
+
+const tweenDisappear = (d, i) => {
+  const shrinkIntrpl = d3.interpolate(varyRadius(d.r, i), 0)
+  return a => arc.outerRadius(shrinkIntrpl(a)).innerRadius(0)(d)
+}
+
+const tweenGrow = (d, i) => {
+  const radius = varyRadius(d.r, i)
+  const maxSliceRadius = varyRadius(DIAMETER / 2, i)
+  const growInner = d3.interpolate(radius, maxSliceRadius)
+  const growOuter = d3.interpolate(0, DIAMETER / 4)
+  return a => arc.outerRadius(growInner(a)).innerRadius(growOuter(a))(d)
+}
+
+const tweenRevertGrow = (d, i) => {
+  const radius = varyRadius(d.r, i)
+  const maxSliceRadius = varyRadius(DIAMETER / 2, i)
+  const revertInner = d3.interpolate(maxSliceRadius, radius)
+  const revertOuter = d3.interpolate(DIAMETER / 4, 0)
+  return a => arc.outerRadius(revertInner(a)).innerRadius(revertOuter(a))(d)
 }
 
 const tweenToMiddle = (d) => {
@@ -345,61 +498,37 @@ const tweenToMiddle = (d) => {
   return a => `translate(${transX(a)}, ${transY(a)})`
 }
 
-const tweenGrow = (d, i) => {
-  const radius = varyRadius(d.r, i)
-  const maxSliceRadius = varyRadius(DIAMETER / 2, i)
-  const grow = d3.interpolate(radius, maxSliceRadius)
-  return a => arc.outerRadius(grow(a)).innerRadius(0)(d)
-}
-
-const tweenDisappear = (d, i) => {
-  const shrinkIntrpl = d3.interpolate(varyRadius(d.r, i), 0)
-  return a => arc.outerRadius(shrinkIntrpl(a)).innerRadius(0)(d)
-}
-
 const tweenToOrigPos = (d) => {
   const transX = d3.interpolate(MIDDLE, d.x)
   const transY = d3.interpolate(MIDDLE, d.y)
   return a => `translate(${transX(a)}, ${transY(a)})`
 }
 
-const tweenAppear = (d, i) => {
-  const appear = d3.interpolate(0, varyRadius(d.r, i))
-  return a => arc.outerRadius(appear(a)).innerRadius(0)(d)
-}
+// const getTextDimension = R.memoizeWith(
+//   (text, className, style) => text + className + JSON.stringify(style),
+//   (text, className, style) => {
+//     const spanNode = document.createElement('span')
+//     const allStyles = {
+//       position: 'absolute',
+//       right: '0',
+//       ...style,
+//     }
 
-const tweenRevertGrow = (d, i) => {
-  const radius = varyRadius(d.r, i)
-  const maxSliceRadius = varyRadius(DIAMETER / 2, i)
-  const revertGrow = d3.interpolate(maxSliceRadius, radius)
-  return a => arc.outerRadius(revertGrow(a)).innerRadius(0)(d)
-}
+//     spanNode.innerHTML = text
+//     spanNode.className = className
 
-const getTextDimension = R.memoizeWith(
-  (text, className, style) => text + className + JSON.stringify(style),
-  (text, className, style) => {
-    const spanNode = document.createElement('span')
-    const allStyles = {
-      position: 'absolute',
-      right: '0',
-      ...style,
-    }
+//     for (const prop in allStyles)
+//       spanNode.style[prop] = allStyles[prop]
 
-    spanNode.innerHTML = text
-    spanNode.className = className
+//     document.body.appendChild(spanNode)
 
-    for (const prop in allStyles)
-      spanNode.style[prop] = allStyles[prop]
+//     const dimensions = {
+//       width: spanNode.offsetWidth,
+//       height: spanNode.offsetHeight,
+//     }
 
-    document.body.appendChild(spanNode)
+//     document.body.removeChild(spanNode)
 
-    const dimensions = {
-      width: spanNode.offsetWidth,
-      height: spanNode.offsetHeight,
-    }
-
-    document.body.removeChild(spanNode)
-
-    return dimensions
-  },
-)
+//     return dimensions
+//   },
+// )
