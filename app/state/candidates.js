@@ -1,6 +1,10 @@
 import { handleActions, createAction } from 'redux-actions'
 import * as fromState from 'app/state'
 import colors from 'app/services/colors'
+import iziToast from 'izitoast'
+import 'izitoast/dist/css/iziToast.min.css'
+
+const MAXIMUM_CANDIDATES_COUNT = 10
 
 /* Action Types */
 const TOGGLE_CANDIDATE = 'gihub-search/candidates/TOGGLE_CANDIDATE'
@@ -29,7 +33,23 @@ export default handleActions({
 }, defaultState)
 
 /* Action Creators */
-export const toggleCandidate = createAction(TOGGLE_CANDIDATE)
+const toggleCandidatePure = createAction(TOGGLE_CANDIDATE)
+
+/* Thunks */
+export const toggleCandidate = payload => (dispatch, getState) => {
+  const candidates = getCandidates(getState())
+
+  if (
+    candidates.length === MAXIMUM_CANDIDATES_COUNT
+    && !candidates.find(cand => cand.nameWithOwner === payload.nameWithOwner)
+  )
+    iziToast.error({
+      title: 'Maximum candidates reached',
+      message: 'Please deselect candidate(s) first, only 10 are allowed at a time',
+    })
+  else
+    dispatch(toggleCandidatePure(payload))
+}
 
 /* Selectors */
 export const getCandidates = state => fromState.getCandidates(state).candidates
