@@ -1,3 +1,4 @@
+import React from 'react'
 import BarChart from './chartTypes/BarChart'
 import PieChart from './chartTypes/PieChart'
 
@@ -41,6 +42,7 @@ const CHART_TYPES = [
   {
     key: 'timeline',
     title: 'Timeline Charts',
+    component: () => <span className='gray'>Sorry, timeline chart is still a work in progress.</span>,
     types: [
       {
         title: 'Age (Create/Update)',
@@ -53,27 +55,6 @@ const CHART_TYPES = [
     ],
   },
 ]
-
-// const getTypeNameFromKeyName = (keyName) => {
-//   for (let typeName in CHART_TYPES)
-//     for (let currKeyName in CHART_TYPES[typeName])
-//       if (keyName === currKeyName)
-//         return typeName
-// }
-
-// const getKeyFromKeyName = (keyName) => {
-//   for (let typeName in CHART_TYPES)
-//     for (let currKeyName in CHART_TYPES[typeName])
-//       if (keyName === currKeyName)
-//         return CHART_TYPES[typeName][currKeyName]
-// }
-
-// const getKeyFromKeyName = (keyName) => {
-//   for (let typeName in CHART_TYPES)
-//     for (let currKeyName in CHART_TYPES[typeName])
-//       if (keyName === currKeyName)
-//         return CHART_TYPES[typeName][currKeyName]
-// }
 
 const chartTypes = {
   getLinks: () =>

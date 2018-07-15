@@ -1,39 +1,31 @@
-# now
-- set visibility of labels after fade in/out
-- show details
-- hide details
+# Github Compare
+
+- React.js/D3 app for comparing github repositories' stats with charts (Bar, Pie, Line chart)
+
+# todo now
+
+- limit candidates to 10
+- icon to chart titles and navs
+- 404
+- handle resize
+- responsive
 
 # todo
 
 - compare page
-  - ratio (issues, pull-requests)
-    - labels
-      - id
-      - total
-      - per slice (count, percentage, state)
-    - in transition
-    - highlight (click to toggle highlight)
   - age graph (created/last-updated)
   - add/remove repo
-  - handle resize
-  - graph init animation
-- add collaboratorsCount in repo and bar graph component
 - candidates page?
-- limit candidates to 10
-- handle 0 candidates
-- 404
 - pinned icon
-- icon to chart titles and navs
-- responsive
-- optimize bar chart (transition end is called 10 times)
-- add proper README.md (explain original purpose)
 - 'flash of unrendered svg'
+- add proper README.md
 - add it to portfolio
 
-# enhancements
+# todo (low priority)
 
 - better tool tip for bar graph
 - add other bar graph criterions (pull reqs?/collaborator?/closed issues?) bar graph
 - improve bar graphs highlight (remove bottom border)
 - handle width change in bar graphs
 - remove react faux dom
+- add collaboratorsCount in repo and bar graph component (Github API doesn't support this yet)
