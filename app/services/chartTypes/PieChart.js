@@ -2,11 +2,13 @@
 
 import 'd3-selection-multi'
 import { compose, lifecycle, withState } from 'recompose'
+import { withDebouncedWidth } from 'app/utils/withContainerWidth'
 import * as d3 from 'd3'
 import * as R from 'ramda'
+import c from 'classnames'
 import PropTypes from 'prop-types'
 import React from 'react'
-import withContainerWidth from 'app/utils/withContainerWidth'
+import ReactLoading from 'react-loading'
 import withStyleableContainer from 'app/utils/withStyleableContainer'
 
 const TEXT_COLOR = '#333'
@@ -19,9 +21,10 @@ const centerTextAttrs = {
 }
 
 const PieChart = ({
+  Icon,
+  isLoading,
   setSvgRef,
   typeTitle,
-  Icon,
 }) =>
   <div>
     <h2 className='flex items-center mb4 f3'>
@@ -30,32 +33,33 @@ const PieChart = ({
       </span>
       {typeTitle} Pie Chart
     </h2>
-    <svg className='b' ref={setSvgRef} />
+    {isLoading && <ReactLoading className='mv6 center db' type='spin' color='#333333' />}
+    <svg className={c('b', isLoading && 'dn')} ref={setSvgRef} />
   </div>
 
 const enhance = compose(
   withStyleableContainer,
-  withContainerWidth({ refreshMode: 'debounce', refreshRate: 500 }),
+  withDebouncedWidth,
   withState('svgRef', 'setSvgRef', null),
 
   lifecycle({
     componentDidUpdate: function (prevProps) {
-      if (!this.props.width) {
-        return
-      } else if (this.props.width !== prevProps.width) {
-        this.grossDiameter = Math.min(this.props.width, 400)
-        this.diameter = this.grossDiameter * 0.875
-        this.padding = (this.grossDiameter - this.diameter) / 2
-        this.middle = this.diameter / 2
-      }
+      if (!this.props.isLoading) {
+        if (this.props.isLoading !== prevProps.isLoading) {
+          this.grossDiameter = Math.min(this.props.width, 400)
+          this.diameter = this.grossDiameter * 0.875
+          this.padding = (this.grossDiameter - this.diameter) / 2
+          this.middle = this.diameter / 2
+        }
 
-      if (
-        this.props.width !== prevProps.width
-        || prevProps.candidates !== this.props.candidates
-      )
-        drawChart(this)
-      else if (checkInspectUpdated(prevProps, this.props) && !this.t)
-        updateInspected(this)
+        if (
+          this.props.isLoading !== prevProps.isLoading
+          || prevProps.candidates !== this.props.candidates
+        )
+          drawChart(this)
+        else if (checkInspectUpdated(prevProps, this.props) && !this.t)
+          updateInspected(this)
+      }
     },
   })
 )
@@ -75,6 +79,7 @@ PieChart.propTypes = {
   Icon: PropTypes.func.isRequired,
   inspectedClickId: PropTypes.string,
   inspectedId: PropTypes.string,
+  isLoading: PropTypes.bool.isRequired,
   setSvgRef: PropTypes.func.isRequired,
   svgRef: PropTypes.object,
   typeTitle: PropTypes.string.isRequired,

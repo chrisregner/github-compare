@@ -28,7 +28,6 @@
     "react-burger-menu": "^2.5.2",
     "react-collapse": "^4.0.3",
     "react-dom": "^16.3.2",
-    "react-faux-dom": "^4.2.0",
     "react-loading": "^2.0.2",
     "react-motion": "^0.5.2",
     "react-redux": "^5.0.7",

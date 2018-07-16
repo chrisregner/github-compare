@@ -1,22 +1,24 @@
 /* eslint-disable react/no-unused-prop-types */
 
-import { compose, lifecycle } from 'recompose'
+import { compose, lifecycle, withState } from 'recompose'
 import { lighten } from 'app/services/colors'
-import { withFauxDOM } from 'react-faux-dom'
+import { withDebouncedWidth } from 'app/utils/withContainerWidth'
 import * as d3 from 'd3'
 import PropTypes from 'prop-types'
 import React from 'react'
-import withContainerWidth from 'app/utils/withContainerWidth'
+import ReactLoading from 'react-loading'
 
 const HEIGHT = 400
-const MARGIN = { top: 25, bottom: 10, left: 50, right: 0 }
+const MARGIN = { top: 25, bottom: 10, left: 40, right: 0 }
 const BAR_PADDING_PCT = 0.25
 const DURATION = 500
 
 const BarChart = ({
   chart,
-  typeTitle,
   Icon,
+  isLoading,
+  typeTitle,
+  setSvgRef,
 }) =>
   <React.Fragment>
     <h2 className='mb4 f3'>
@@ -25,7 +27,8 @@ const BarChart = ({
       </span>
       {typeTitle} Count
     </h2>
-    {chart}
+    {isLoading && <ReactLoading className='mv6 center db' type='spin' color='#333333' />}
+    {<svg className={isLoading ? 'dn' : ''} ref={setSvgRef} />}
     <style jsx global>{`
       .axis-y-grid line {
         stroke: #e6e6e6;
@@ -38,30 +41,49 @@ const BarChart = ({
     `}</style>
   </React.Fragment>
 
+BarChart.propTypes = {
+  candidates: PropTypes.arrayOf(PropTypes.shape({
+    color: PropTypes.string.isRequired,
+    id: PropTypes.string.isRequired,
+    toggleClickInspect: PropTypes.func.isRequired,
+    toggleHoverInspect: PropTypes.func.isRequired,
+    unhoverInspect: PropTypes.func.isRequired,
+    value: PropTypes.number.isRequired,
+  })).isRequired,
+  chart: PropTypes.node,
+  Icon: PropTypes.func.isRequired,
+  inspectedId: PropTypes.string,
+  isLoading: PropTypes.bool.isRequired,
+  setSvgRef: PropTypes.func.isRequired,
+  svgRef: PropTypes.object,
+  typeTitle: PropTypes.string.isRequired,
+  width: PropTypes.number,
+}
+
 const enhance = compose(
-  withContainerWidth({ refreshMode: 'debounce', refreshRate: 500 }),
-  withFauxDOM,
+  withDebouncedWidth,
+  withState('svgRef', 'setSvgRef', null),
 
   lifecycle({
     componentDidUpdate: function (prevProps) {
-      if (this.props.width) {
-        if (this.props.width !== prevProps.width)
+      if (!this.props.isLoading)
+        if (this.props.isLoading !== prevProps.isLoading)
           drawChart(this, true)
         else if (prevProps.candidates !== this.props.candidates)
           drawChart(this)
         else if ((prevProps.inspectedId !== this.props.inspectedId) && !this.t)
           updateInspected(this)
-      }
     },
   }),
 )
 
+/* Internal Functions */
+
 const drawChart = (inst, shouldDrawFromScratch) => {
   const {
-    animateFauxDOM,
     candidates,
-    connectFauxDOM,
     width,
+    svgRef,
   } = inst.props
 
   const innerWd = width - (MARGIN.left + MARGIN.right)
@@ -81,18 +103,18 @@ const drawChart = (inst, shouldDrawFromScratch) => {
   const y = d3.scaleLinear()
     .domain([0, highestValue])
     .rangeRound([innerHt, 0])
-  const svg = connectFauxDOM('svg', 'chart', shouldDrawFromScratch)
 
   let t, axisYLabelSel, axisYGridSel, candidatesSel, barsTrans, valuesSel
 
   // If this is first render...
   if (shouldDrawFromScratch) {
     // Setup SVG
-    svg.setAttribute('width', '100%')
-    svg.setAttribute('height', HEIGHT)
+    svgRef.innerHTML = '' // Remove any previous chart
+    svgRef.setAttribute('width', '100%')
+    svgRef.setAttribute('height', HEIGHT)
 
     // Add the main wrapper
-    const wrapperSel = d3.select(svg)
+    const wrapperSel = d3.select(svgRef)
       .append('g')
       .attr('transform', `translate(${MARGIN.left}, ${MARGIN.top})`)
 
@@ -157,7 +179,7 @@ const drawChart = (inst, shouldDrawFromScratch) => {
     removeHighlight(inst, true)
 
     // Select elements; enter candidates data
-    const svgSel = d3.select(svg)
+    const svgSel = d3.select(svgRef)
     axisYLabelSel = svgSel.select('.axis-y-label')
     axisYGridSel = svgSel.select('.axis-y-grid')
     candidatesSel = svgSel.selectAll('.candidate')
@@ -204,17 +226,13 @@ const drawChart = (inst, shouldDrawFromScratch) => {
   inst.innerHt = innerHt
   inst.x = x
   inst.y = y
-
-  // Animate changes to React
-  animateFauxDOM(1000)
 }
 
 const updateInspected = (inst) => {
   const {
-    connectFauxDOM,
-    animateFauxDOM,
     inspectedId,
     width,
+    svgRef,
   } = inst.props
 
   const highlightSize = width >= 600 ? 5 : 3
@@ -223,7 +241,7 @@ const updateInspected = (inst) => {
   removeHighlight(inst)
 
   // Highlight the inspected candidate (if not highlighted yet)
-  const toHighlightSel = d3.select(connectFauxDOM('svg', 'chart'))
+  const toHighlightSel = d3.select(svgRef)
     .selectAll('.candidate:not(.candidate--highlighted)')
     .filter(d => d.id === inspectedId)
 
@@ -259,17 +277,15 @@ const updateInspected = (inst) => {
       .style('font-weight', '700')
       .style('font-size', '.9em')
   }
-
-  animateFauxDOM(DURATION)
 }
 
 const removeHighlight = (inst, shouldRemoveAll) => {
   const {
-    connectFauxDOM,
     inspectedId,
+    svgRef,
   } = inst.props
 
-  const toUnhighlightSel = d3.select(connectFauxDOM('svg', 'chart'))
+  const toUnhighlightSel = d3.select(svgRef)
     .selectAll('.candidate--highlighted')
     .call(sel =>
       shouldRemoveAll
@@ -303,25 +319,6 @@ const calcPdPct = ({ qty, pdPct, maxQty }) => {
   const pd = totalPd / (qty + 1)
   const pdPctForQty = pd / (idealNetWd + pd)
   return pdPctForQty
-}
-
-BarChart.propTypes = {
-  animateFauxDOM: PropTypes.func.isRequired,
-  candidates: PropTypes.arrayOf(PropTypes.shape({
-    color: PropTypes.string.isRequired,
-    id: PropTypes.string.isRequired,
-    toggleClickInspect: PropTypes.func.isRequired,
-    toggleHoverInspect: PropTypes.func.isRequired,
-    unhoverInspect: PropTypes.func.isRequired,
-    value: PropTypes.number.isRequired,
-  })).isRequired,
-  chart: PropTypes.node,
-  connectFauxDOM: PropTypes.func.isRequired,
-  drawFauxDOM: PropTypes.func.isRequired,
-  Icon: PropTypes.func.isRequired,
-  inspectedId: PropTypes.string,
-  typeTitle: PropTypes.string.isRequired,
-  width: PropTypes.number,
 }
 
 export default enhance(BarChart)
