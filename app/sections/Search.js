@@ -4,6 +4,7 @@ import PropTypes from 'prop-types'
 import c from 'classnames'
 import ReactLoading from 'react-loading'
 import Repo from 'app/components/Repo'
+import SearchIcon from 'app/components/icons/SearchIcon'
 
 const Search = ({
   candidateIds,
@@ -18,7 +19,12 @@ const Search = ({
 }) =>
   <div className='flex flex-column pa3 pa4-l min-vh-100'>
     <div>
-      <h2 className='mb3'>Search</h2>
+      <h2 className='mb3'>
+        <span className='mr2'>
+          <SearchIcon svgProps={{ width: '.75em', height: '.75em' }} pathProps={{ fill: '#333' }} />
+        </span>
+        Search
+      </h2>
 
       <input
         type='text'

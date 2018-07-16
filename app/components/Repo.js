@@ -1,11 +1,12 @@
-import React from 'react'
-import PropTypes from 'prop-types'
-import format from 'date-fns/format'
+import * as R from 'ramda'
 import CalendarIcon from 'app/components/icons/CalendarIcon'
 import EyeIcon from 'app/components/icons/EyeIcon'
 import ForkIcon from 'app/components/icons/ForkIcon'
+import format from 'date-fns/format'
 import LinkIcon from 'app/components/icons/LinkIcon'
 import PencilIcon from 'app/components/icons/PencilIcon'
+import PropTypes from 'prop-types'
+import React from 'react'
 import StarIcon from 'app/components/icons/StarIcon'
 import UserIcon from 'app/components/icons/UserIcon'
 import WarningIcon from 'app/components/icons/WarningIcon'
@@ -25,7 +26,7 @@ const Repo = ({
 
       <span className='flex items-center'>
         <span className='mr1' title='URL'>
-          <LinkIcon width='.75em' height='.75em' color='#555555' />
+          <LinkIcon svgProps={{ width: '.75em', height: '.75em' }} pathProps={{ fill: '#555' }} />
         </span>
         <span className='dib f6'>
           <a href={githubUrl} className='blue no-underline'>{nameWithOwner}</a>
@@ -36,7 +37,7 @@ const Repo = ({
     <div className='flex flex-wrap items-center mb2 f7 gray'>
       <span className='flex items-center' title='author'>
         <span className='mr1'>
-          <UserIcon width='1em' height='1em' color='#555555' />
+          <UserIcon svgProps={{ width: '1em', height: '1em' }} pathProps={{ fill: '#555' }} />
         </span>
         <a href={ownerGithubUrl} className='mr3 blue no-underline'>{ownerUsername}</a>
       </span>
@@ -44,13 +45,13 @@ const Repo = ({
       {repoProps.map(({
         formatter = d => d,
         icon: Icon,
-        iconProps = { width: '1em', height: '1em' },
+        iconProps = {},
         key,
         tooltip,
       }) =>
         <span className='flex items-center' title={tooltip} key={key}>
           <span className='mr1'>
-            <Icon {...iconProps} color='#555555' />
+            <Icon {...R.mergeDeepRight(defaultIconProps, iconProps)} />
           </span>
           <span className='mr3'>{formatter(props[key])}</span>
         </span>
@@ -61,6 +62,11 @@ const Repo = ({
       ? <p className='f6 lh-copy'>{description}</p>
       : <p className='f6 lh-copy gray'>(No description provided)</p>}
   </React.Fragment>
+
+const defaultIconProps = {
+  svgProps: { width: '1em', height: '1em' },
+  pathProps: { fill: '#555' },
+}
 
 const repoProps = [
   {
@@ -79,7 +85,6 @@ const repoProps = [
     icon: StarIcon,
     key: 'stargazerCount',
     tooltip: 'stars',
-    iconProps: { width: '1.2em', height: '1.2em' },
   },
   {
     icon: WarningIcon,
@@ -90,7 +95,6 @@ const repoProps = [
     icon: ForkIcon,
     key: 'forkCount',
     tooltip: 'forks',
-    iconProps: { width: '1.2em', height: '1.2em' },
   },
   {
     icon: EyeIcon,

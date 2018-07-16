@@ -4,8 +4,6 @@
 
 # todo now
 
-- limit candidates to 10
-- icon to chart titles and navs
 - 404
 - handle resize
 - responsive

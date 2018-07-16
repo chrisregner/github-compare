@@ -1,6 +1,15 @@
 import React from 'react'
 import BarChart from './chartTypes/BarChart'
 import PieChart from './chartTypes/PieChart'
+import BarChartIcon from 'app/components/icons/BarChartIcon'
+import PieChartIcon from 'app/components/icons/PieChartIcon'
+import TimeChartIcon from 'app/components/icons/TimeChartIcon'
+import EyeIcon from 'app/components/icons/EyeIcon'
+import ForkIcon from 'app/components/icons/ForkIcon'
+import StarIcon from 'app/components/icons/StarIcon'
+import WarningIcon from 'app/components/icons/WarningIcon'
+import CakeIcon from 'app/components/icons/CakeIcon'
+import PullIcon from 'app/components/icons/PullIcon'
 
 const BASE_URL = '/compare'
 const CHART_TYPES = [
@@ -8,21 +17,40 @@ const CHART_TYPES = [
     key: 'bar',
     title: 'Bar Charts',
     component: BarChart,
+    icon: BarChartIcon,
     types: [
-      { title: 'Stars', key: 'stargazerCount' },
-      { title: 'Forks', key: 'forkCount' },
-      { title: 'Open Issues', key: 'openIssueCount' },
-      { title: 'Watchers', key: 'watcherCount' },
+      {
+        title: 'Stars',
+        key: 'stargazerCount',
+        icon: StarIcon,
+      },
+      {
+        title: 'Forks',
+        key: 'forkCount',
+        icon: ForkIcon,
+      },
+      {
+        title: 'Open Issues',
+        key: 'openIssueCount',
+        icon: WarningIcon,
+      },
+      {
+        title: 'Watchers',
+        key: 'watcherCount',
+        icon: EyeIcon,
+      },
     ],
   },
   {
     key: 'pie',
     title: 'Pie Charts',
     component: PieChart,
+    icon: PieChartIcon,
     types: [
       {
         key: 'issues',
         title: 'Issues',
+        icon: WarningIcon,
         valueKeys: [
           { key: 'closedIssueCount', title: 'Closed' },
           { key: 'openIssueCount', title: 'Open' },
@@ -31,6 +59,7 @@ const CHART_TYPES = [
       {
         key: 'pullReqs',
         title: 'Pull Requests',
+        icon: PullIcon,
         valueKeys: [
           { key: 'mergedPullReqCount', title: 'Merged' },
           { key: 'closedPullReqCount', title: 'Closed' },
@@ -42,11 +71,13 @@ const CHART_TYPES = [
   {
     key: 'timeline',
     title: 'Timeline Charts',
+    icon: TimeChartIcon,
     component: () => <span className='gray'>Sorry, timeline chart is still a work in progress.</span>,
     types: [
       {
         title: 'Age (Create/Update)',
         key: 'age',
+        icon: CakeIcon,
         valueKeys: [
           { key: 'createdAt', title: 'Created At' },
           { key: 'updatedAt', title: 'Updated At' },
@@ -62,10 +93,12 @@ const chartTypes = {
       ({
         to: `${BASE_URL}/${type.key}`,
         title: type.title,
+        icon: type.icon,
         children: type.types.map(subtype =>
           ({
             to: `${BASE_URL}/${type.key}/${subtype.key}`,
             title: subtype.title,
+            icon: subtype.icon,
           })),
       })),
   getSlugs: () =>

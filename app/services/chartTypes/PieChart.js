@@ -25,9 +25,15 @@ const centerTextAttrs = {
 const PieChart = ({
   setSvgRef,
   typeTitle,
+  Icon,
 }) =>
   <div>
-    <h2 className='mb4 f3'>{typeTitle} Pie Chart</h2>
+    <h2 className='flex items-center mb4 f3'>
+      <span className='mr2'>
+        <Icon svgProps={{ width: '.75em', height: '.75em' }} pathProps={{ fill: '#333' }} />
+      </span>
+      {typeTitle} Pie Chart
+    </h2>
     <svg className='b' ref={setSvgRef} />
   </div>
 
@@ -67,6 +73,7 @@ PieChart.propTypes = {
       title: PropTypes.string.isRequired,
     })).isRequired,
   })).isRequired,
+  Icon: PropTypes.func.isRequired,
   inspectedClickId: PropTypes.string,
   inspectedId: PropTypes.string,
   setSvgRef: PropTypes.func.isRequired,
@@ -198,13 +205,13 @@ const drawChart = (inst) => {
     .attrs(({ x, y }) => ({
       x, y,
       ...centerTextAttrs,
-      'font-size': FONT_SM,
+      'font-size': '.625rem',
       'paint-order': 'stroke',
       'stroke-width': 2,
       fill: TEXT_COLOR,
       stroke: BG_COLOR,
     }))
-    .text('Show Details')
+    .text('(Click To Show Details)')
 }
 
 const updateInspected = (inst, delay = 0) => {
@@ -322,7 +329,7 @@ const updateInspected = (inst, delay = 0) => {
       .text(d => d.value + ' Total')
       .attrs({ ...centerLabelAttrs, dy: '2%' })
     details.append('text')
-      .text('(Click to hide)')
+      .text('(Click to hide details)')
       .attrs({
         ...centerLabelAttrs,
         dy: '6%',

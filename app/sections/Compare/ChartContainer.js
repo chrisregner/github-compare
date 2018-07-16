@@ -42,6 +42,7 @@ export default compose(
         unhoverInspect,
       }),
       Component: cat.component,
+      Icon: type.icon,
       typeTitle: type.title,
     }
   })

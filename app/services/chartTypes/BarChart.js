@@ -17,9 +17,15 @@ const DURATION = 500
 const BarChart = ({
   chart,
   typeTitle,
+  Icon,
 }) =>
   <React.Fragment>
-    <h2 className='mb4 f3'>{typeTitle} Count</h2>
+    <h2 className='mb4 f3'>
+      <span className='mr2'>
+        <Icon svgProps={{ width: '.75em', height: '.75em' }} pathProps={{ fill: '#333' }} />
+      </span>
+      {typeTitle} Count
+    </h2>
     {chart}
     <style jsx global>{`
       .axis-y-grid line {
@@ -292,6 +298,7 @@ BarChart.propTypes = {
   chart: PropTypes.node,
   connectFauxDOM: PropTypes.func.isRequired,
   drawFauxDOM: PropTypes.func.isRequired,
+  Icon: PropTypes.func.isRequired,
   inspectedId: PropTypes.string,
   typeTitle: PropTypes.string.isRequired,
   width: PropTypes.number.isRequired,
