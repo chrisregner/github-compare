@@ -20,11 +20,11 @@ const Header = ({ width }) => {
 
       <div className='absolute bottom-0 pa3 lh-title f7 silver'>
         By
-        {' '}<a href='http://chrisregner.com/' className='gray'>
+        {' '}<a href='http://chrisregner.com/' className='silver'>
           Christopher Regner
         </a>. <br />
         View source
-        {' '}<a href='https://github.com/chrisregner/github-compare' className='gray'>
+        {' '}<a href='https://github.com/chrisregner/github-compare' className='silver'>
           here
         </a>.
       </div>

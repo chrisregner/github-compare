@@ -10,6 +10,7 @@ import App from './App'
 import client from 'app/services/api'
 import thunk from 'redux-thunk'
 
+const baseUrl = process.env.NODE_ENV === 'production' ? '/github-compare' : '/'
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose
 const store = createStore(reducer, /* preloadedState, */ composeEnhancers(
   applyMiddleware(thunk)
@@ -20,7 +21,7 @@ const render = Component =>
     <AppContainer>
       <ApolloProvider client={client}>
         <Provider store={store}>
-          <BrowserRouter>
+          <BrowserRouter basename={baseUrl}>
             <Component />
           </BrowserRouter>
         </Provider>

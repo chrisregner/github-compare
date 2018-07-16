@@ -1,19 +1,13 @@
 # Github Compare
 
-- React.js/D3 app for comparing github repositories' stats with charts (Bar, Pie, Line chart)
-
-# todo now
-
-- launch
+- React.js/D3/GraphQL app for comparing github repositories' stats with charts (Bar, Pie, Line chart)
 
 # todo
 
 - compare page
   - age graph (created/last-updated)
-  - add/remove repo
-- candidates page?
-- pinned icon
-- 'flash of unrendered svg'
+- add/remove candidates
+- pinned icon when a candidate is clicked
 - add proper README.md
 - add it to portfolio
 
