@@ -11,7 +11,6 @@ import withContainerWidth from 'app/utils/withContainerWidth'
 const HEIGHT = 400
 const MARGIN = { top: 25, bottom: 10, left: 50, right: 0 }
 const BAR_PADDING_PCT = 0.25
-const HIGHLIGHT_SIZE = 5
 const DURATION = 500
 
 const BarChart = ({
@@ -39,7 +38,25 @@ const BarChart = ({
     `}</style>
   </React.Fragment>
 
-const drawChart = (inst) => {
+const enhance = compose(
+  withContainerWidth({ refreshMode: 'debounce', refreshRate: 500 }),
+  withFauxDOM,
+
+  lifecycle({
+    componentDidUpdate: function (prevProps) {
+      if (this.props.width) {
+        if (this.props.width !== prevProps.width)
+          drawChart(this, true)
+        else if (prevProps.candidates !== this.props.candidates)
+          drawChart(this)
+        else if ((prevProps.inspectedId !== this.props.inspectedId) && !this.t)
+          updateInspected(this)
+      }
+    },
+  }),
+)
+
+const drawChart = (inst, shouldDrawFromScratch) => {
   const {
     animateFauxDOM,
     candidates,
@@ -64,12 +81,12 @@ const drawChart = (inst) => {
   const y = d3.scaleLinear()
     .domain([0, highestValue])
     .rangeRound([innerHt, 0])
-  const svg = connectFauxDOM('svg', 'chart')
+  const svg = connectFauxDOM('svg', 'chart', shouldDrawFromScratch)
 
   let t, axisYLabelSel, axisYGridSel, candidatesSel, barsTrans, valuesSel
 
   // If this is first render...
-  if (!inst.hasRendered) {
+  if (shouldDrawFromScratch) {
     // Setup SVG
     svg.setAttribute('width', '100%')
     svg.setAttribute('height', HEIGHT)
@@ -104,7 +121,7 @@ const drawChart = (inst) => {
 
         if (inst.tEndCount === candidates.length) {
           delete inst.t
-          inst.updateInspected(inst)
+          updateInspected(inst)
         }
       })
 
@@ -152,7 +169,7 @@ const drawChart = (inst) => {
       .duration(DURATION)
       .on('end', () => {
         delete inst.t
-        inst.updateInspected()
+        updateInspected(inst)
       })
 
     // Get bars transition instance; do updates/animations that are unique to update scenario
@@ -197,7 +214,10 @@ const updateInspected = (inst) => {
     connectFauxDOM,
     animateFauxDOM,
     inspectedId,
+    width,
   } = inst.props
+
+  const highlightSize = width >= 600 ? 5 : 3
 
   // Remove highlight of any candidate that shouldn't be highlighted
   removeHighlight(inst)
@@ -218,18 +238,18 @@ const updateInspected = (inst) => {
     toHighlightSel.insert('rect', ':first-child')
       .attr('class', 'highlight')
       .attr('fill', d => lighten(d.color))
-      .attr('rx', HIGHLIGHT_SIZE)
-      .attr('ry', HIGHLIGHT_SIZE)
+      .attr('rx', highlightSize)
+      .attr('ry', highlightSize)
       .attr('height', d => innerHt - y(d.value))
       .attr('width', x.bandwidth())
       .attr('x', d => x(d.id))
       .attr('y', d => y(d.value))
       .transition()
       .duration(DURATION)
-      .attr('height', d => innerHt - y(d.value) + (HIGHLIGHT_SIZE * 2))
-      .attr('width', x.bandwidth() + (HIGHLIGHT_SIZE * 2))
-      .attr('x', d => x(d.id) - HIGHLIGHT_SIZE)
-      .attr('y', d => y(d.value) - HIGHLIGHT_SIZE)
+      .attr('height', d => innerHt - y(d.value) + (highlightSize * 2))
+      .attr('width', x.bandwidth() + (highlightSize * 2))
+      .attr('x', d => x(d.id) - highlightSize)
+      .attr('y', d => y(d.value) - highlightSize)
 
     toHighlightSel.select('text')
       .transition()
@@ -301,30 +321,7 @@ BarChart.propTypes = {
   Icon: PropTypes.func.isRequired,
   inspectedId: PropTypes.string,
   typeTitle: PropTypes.string.isRequired,
-  width: PropTypes.number.isRequired,
+  width: PropTypes.number,
 }
 
-export default compose(
-  withContainerWidth,
-  withFauxDOM,
-
-  lifecycle({
-    componentDidMount: function () {
-      drawChart(this)
-      this.updateInspected = () => updateInspected(this)
-    },
-
-    componentDidUpdate: function (prevProps) {
-      // TODO: handle width changes
-
-      // If candidates has changed...
-      if (prevProps.candidates !== this.props.candidates)
-        drawChart(this)
-
-      // Else, if inspected candidate has changed and the chart is NOT animating
-      // Note: highlight would be automatically updated every time a draw finishes
-      else if ((prevProps.inspectedId !== this.props.inspectedId) && !this.t)
-        this.updateInspected()
-    },
-  }),
-)(BarChart)
+export default enhance(BarChart)

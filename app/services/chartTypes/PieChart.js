@@ -9,13 +9,9 @@ import React from 'react'
 import withContainerWidth from 'app/utils/withContainerWidth'
 import withStyleableContainer from 'app/utils/withStyleableContainer'
 
-const GROSS_DIAMETER = 400
-const DIAMETER = GROSS_DIAMETER * 0.875
-const PADDING = (GROSS_DIAMETER - DIAMETER) / 2
 const TEXT_COLOR = '#333'
 const BG_COLOR = '#fff'
 const DURATION = 750
-const MIDDLE = DIAMETER / 2
 const FONT_SM = '.75rem'
 const centerTextAttrs = {
   'alignment-baseline': 'middle',
@@ -39,24 +35,27 @@ const PieChart = ({
 
 const enhance = compose(
   withStyleableContainer,
-  withContainerWidth,
+  withContainerWidth({ refreshMode: 'debounce', refreshRate: 500 }),
   withState('svgRef', 'setSvgRef', null),
 
   lifecycle({
     componentDidUpdate: function (prevProps) {
-      // Initial render
-      if (!this.hasRendered) {
-        drawChart(this)
-        this.hasRendered = true
-
-      // Chart rewrite (candidates has changed)
-      } else if (prevProps.candidates !== this.props.candidates) {
-        drawChart(this)
-
-      // Update inspected (candidate has been hovered/clicked)
-      } else if (checkInspectUpdated(prevProps, this.props) && !this.t) {
-        updateInspected(this)
+      if (!this.props.width) {
+        return
+      } else if (this.props.width !== prevProps.width) {
+        this.grossDiameter = Math.min(this.props.width, 400)
+        this.diameter = this.grossDiameter * 0.875
+        this.padding = (this.grossDiameter - this.diameter) / 2
+        this.middle = this.diameter / 2
       }
+
+      if (
+        this.props.width !== prevProps.width
+        || prevProps.candidates !== this.props.candidates
+      )
+        drawChart(this)
+      else if (checkInspectUpdated(prevProps, this.props) && !this.t)
+        updateInspected(this)
     },
   })
 )
@@ -79,7 +78,7 @@ PieChart.propTypes = {
   setSvgRef: PropTypes.func.isRequired,
   svgRef: PropTypes.object,
   typeTitle: PropTypes.string.isRequired,
-  width: PropTypes.number.isRequired,
+  width: PropTypes.number,
 }
 
 export default enhance(PieChart)
@@ -91,9 +90,15 @@ const drawChart = (inst) => {
     svgRef,
   } = inst.props
 
+  const {
+    grossDiameter,
+    diameter,
+    padding,
+  } = inst
+
   svgRef.innerHTML = '' // Remove any previous chart
   svgRef.setAttribute('width', '100%')
-  svgRef.setAttribute('height', GROSS_DIAMETER)
+  svgRef.setAttribute('height', grossDiameter)
 
   const svg = d3.select(svgRef)
   let mappedData = {
@@ -116,7 +121,7 @@ const drawChart = (inst) => {
     .append('g')
     .attrs({
       class: 'wrapper',
-      transform: `translate(${PADDING}, ${PADDING})`,
+      transform: `translate(${padding}, ${padding})`,
     })
 
   // Save transition instance
@@ -133,7 +138,7 @@ const drawChart = (inst) => {
 
   // Apply pack layout to data
   const applyPackLayout = d3.pack()
-    .size([DIAMETER, DIAMETER])
+    .size([diameter, diameter])
     .padding(1)
   applyPackLayout(rootData)
 
@@ -141,10 +146,10 @@ const drawChart = (inst) => {
   wrapper.append('circle')
     .style('fill', BG_COLOR)
     .attrs({
-      cx: GROSS_DIAMETER / 2,
-      cy: GROSS_DIAMETER / 2,
-      r: GROSS_DIAMETER / 2,
-      transform: `translate(${-PADDING}, ${-PADDING})`,
+      cx: grossDiameter / 2,
+      cy: grossDiameter / 2,
+      r: grossDiameter / 2,
+      transform: `translate(${-padding}, ${-padding})`,
     })
 
   // Add the pies
@@ -221,6 +226,11 @@ const updateInspected = (inst, delay = 0) => {
     svgRef,
   } = inst.props
 
+  const {
+    diameter,
+    middle,
+  } = inst
+
   const svg = d3.select(svgRef)
   const pies = svg.selectAll('.pie')
   const hasPreviouslyClicked = svg.selectAll('.pie.clicked').size()
@@ -296,8 +306,8 @@ const updateInspected = (inst, delay = 0) => {
         class: 'center-label ttu',
         fill: TEXT_COLOR,
         opacity: 0,
-        x: MIDDLE,
-        y: MIDDLE,
+        x: middle,
+        y: middle,
       }
     const total = clickedSlices.data()
       .map(d => d.value)
@@ -315,24 +325,24 @@ const updateInspected = (inst, delay = 0) => {
     // Grow and move clicked pies to middle
     clickedSlices
       .transition(t)
-      .attrTween('transform', tweenToMiddle)
-      .attrTween('d', tweenGrow)
+      .attrTween('transform', tweenToMiddle(middle))
+      .attrTween('d', tweenGrow(diameter))
 
     // Add the center labels
     details.append('text')
       .text(inst.props.typeTitle)
-      .attrs({ ...centerLabelAttrs, dy: '-6%' })
+      .attrs({ ...centerLabelAttrs, dy: '-7.5%' })
     details.append('text')
       .text(d => d.data.name)
-      .attrs({ ...centerLabelAttrs, dy: '-2%' })
+      .attrs({ ...centerLabelAttrs, dy: '-2.5%' })
     details.append('text')
       .text(d => d.value + ' Total')
-      .attrs({ ...centerLabelAttrs, dy: '2%' })
+      .attrs({ ...centerLabelAttrs, dy: '2.5%' })
     details.append('text')
       .text('(Click to hide details)')
       .attrs({
         ...centerLabelAttrs,
-        dy: '6%',
+        dy: '7.5%',
         fill: 'gray',
         'font-size': '.625rem',
       })
@@ -343,7 +353,7 @@ const updateInspected = (inst, delay = 0) => {
       .enter()
       .append('path')
       .attrs((d, i) => {
-        const maxSliceRadius = varyRadius(DIAMETER / 2, i)
+        const maxSliceRadius = varyRadius(diameter / 2, i)
         let arcD = d3.arc()
           .innerRadius(0)
           .outerRadius(maxSliceRadius)
@@ -361,7 +371,7 @@ const updateInspected = (inst, delay = 0) => {
         return {
           id: 'slice-label-arc-' + i,
           class: 'slice-label-arc',
-          transform: `translate(${MIDDLE}, ${MIDDLE})
+          transform: `translate(${middle}, ${middle})
             rotate(${(d.labelPosPct * 360)})`,
           d: arcD,
           visibility: 'hidden',
@@ -375,7 +385,7 @@ const updateInspected = (inst, delay = 0) => {
       .append('text')
       .attrs(d => ({
         class: 'slice-label ttu',
-        dy: DIAMETER * (d.shouldReverse ? 0.015 : -0.015),
+        dy: diameter * (d.shouldReverse ? 0.015 : -0.015),
         opacity: 0,
       }))
       .append('textPath')
@@ -425,8 +435,8 @@ const updateInspected = (inst, delay = 0) => {
   svg.selectAll('.pie.clicked')
     .filter(d => d.id !== inspectedClickId).selectAll('.slice')
     .transition(t)
-    .attrTween('transform', tweenToOrigPos)
-    .attrTween('d', tweenRevertGrow)
+    .attrTween('transform', tweenToOrigPos(middle))
+    .attrTween('d', tweenRevertGrow(diameter))
 
   // When unclicked, show non clicked pies
   if (hasPreviouslyClicked)
@@ -483,31 +493,31 @@ const tweenDisappear = (d, i) => {
   return a => arc.outerRadius(shrinkIntrpl(a)).innerRadius(0)(d)
 }
 
-const tweenGrow = (d, i) => {
+const tweenGrow = diameter => (d, i) => {
   const radius = varyRadius(d.r, i)
-  const maxSliceRadius = varyRadius(DIAMETER / 2, i)
+  const maxSliceRadius = varyRadius(diameter / 2, i)
   const growInner = d3.interpolate(radius, maxSliceRadius)
-  const growOuter = d3.interpolate(0, DIAMETER / 4)
+  const growOuter = d3.interpolate(0, diameter / 4)
   return a => arc.outerRadius(growInner(a)).innerRadius(growOuter(a))(d)
 }
 
-const tweenRevertGrow = (d, i) => {
+const tweenRevertGrow = diameter => (d, i) => {
   const radius = varyRadius(d.r, i)
-  const maxSliceRadius = varyRadius(DIAMETER / 2, i)
+  const maxSliceRadius = varyRadius(diameter / 2, i)
   const revertInner = d3.interpolate(maxSliceRadius, radius)
-  const revertOuter = d3.interpolate(DIAMETER / 4, 0)
+  const revertOuter = d3.interpolate(diameter / 4, 0)
   return a => arc.outerRadius(revertInner(a)).innerRadius(revertOuter(a))(d)
 }
 
-const tweenToMiddle = (d) => {
-  const transX = d3.interpolate(d.x, MIDDLE)
-  const transY = d3.interpolate(d.y, MIDDLE)
+const tweenToMiddle = middle => (d) => {
+  const transX = d3.interpolate(d.x, middle)
+  const transY = d3.interpolate(d.y, middle)
   return a => `translate(${transX(a)}, ${transY(a)})`
 }
 
-const tweenToOrigPos = (d) => {
-  const transX = d3.interpolate(MIDDLE, d.x)
-  const transY = d3.interpolate(MIDDLE, d.y)
+const tweenToOrigPos = middle => (d) => {
+  const transX = d3.interpolate(middle, d.x)
+  const transY = d3.interpolate(middle, d.y)
   return a => `translate(${transX(a)}, ${transY(a)})`
 }
 

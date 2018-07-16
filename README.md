@@ -4,8 +4,8 @@
 
 # todo now
 
-- handle resize
-- responsive
+- PieChart and BarChart debounce and loader
+- add infos
 
 # todo
 

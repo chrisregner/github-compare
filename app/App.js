@@ -7,12 +7,10 @@ import Header from 'app/sections/Header'
 import NotFound from 'app/sections/NotFound'
 
 const App = () =>
-  <div className='flex near-black sans-serif'>
-    <div className='mw5 w-100'>
-      <Header className='fixed mw5 w-100' />
-    </div>
+  <div id='outer-container' className='flex near-black sans-serif'>
+    <Header />
 
-    <div className='flex-auto mw8'>
+    <div id='page-container' className='flex-auto mw8'>
       <Switch>
         <Route exact path='/' component={SearchContainer} />
         <Route path='/compare/:cat?/:type?' component={CompareContainer} />
@@ -21,9 +19,19 @@ const App = () =>
     </div>
 
     <style jsx global>{`
+      body {
+        font-size: 14px;
+        min-width: 320px;
+      }
+
       /* base global styles */
       h1, h2, h3, h4, h5, h6, p { margin: 0 }
       h1, h2, h3, h4, h5, h6 { font-weight: normal; }
+
+
+      @media screen and (min-width: 48em) {
+        body { font-size: 16px; }
+      }
     `}</style>
   </div>
 

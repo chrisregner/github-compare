@@ -34,8 +34,8 @@ const Repo = ({
       </span>
     </div>
 
-    <div className='flex flex-wrap items-center mb2 f7 gray'>
-      <span className='flex items-center' title='author'>
+    <div className='flex flex-wrap items-center mb1 f7 gray'>
+      <span className='flex items-center mb1' title='author'>
         <span className='mr1'>
           <UserIcon svgProps={{ width: '1em', height: '1em' }} pathProps={{ fill: '#555' }} />
         </span>
@@ -49,7 +49,7 @@ const Repo = ({
         key,
         tooltip,
       }) =>
-        <span className='flex items-center' title={tooltip} key={key}>
+        <span className='flex items-center mb1' title={tooltip} key={key}>
           <span className='mr1'>
             <Icon {...R.mergeDeepRight(defaultIconProps, iconProps)} />
           </span>

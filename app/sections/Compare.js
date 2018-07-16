@@ -5,7 +5,7 @@ import Repo from 'app/components/Repo'
 
 const Compare = ({ candidatesCount, inspectedCandidate, ...props }) =>
   candidatesCount
-    ? <div className='pa4'>
+    ? <div className='pa3 pa4-l'>
       <ChartContainer className='mb4' {...props} />
 
       <div
@@ -14,7 +14,7 @@ const Compare = ({ candidatesCount, inspectedCandidate, ...props }) =>
       >
         {inspectedCandidate
           ? <Repo {...inspectedCandidate} />
-          : <span className='gray'>
+          : <span className='gray lh-copy'>
               Click or hover on a candidate (on chart or on list) to view more info
           </span>}
       </div>
@@ -23,7 +23,7 @@ const Compare = ({ candidatesCount, inspectedCandidate, ...props }) =>
         ._inspected-wrapper { min-height: 7rem; }
       `}</style>
     </div>
-    : <div className='pa4 gray'>
+    : <div className='pa3 pa4-l gray'>
       Please select candidates first.
     </div>
 
