@@ -71,7 +71,6 @@ module.exports = {
         new BundleAnalyzerPlugin(),
         new webpack.optimize.ModuleConcatenationPlugin(),
         new UglifyJsPlugin(),
-        new webpack.HashedModuleIdsPlugin(),
         new webpack.DefinePlugin({
           'process.env.NODE_ENV': JSON.stringify('production'),
         }),
