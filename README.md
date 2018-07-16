@@ -4,7 +4,6 @@
 
 # todo now
 
-- 404
 - handle resize
 - responsive
 

@@ -1,6 +1,3 @@
-import { compose, withProps } from 'recompose'
-import { connect } from 'react-redux'
-import { getCandidates } from 'app/state/candidates'
 import {
   getInspectedId,
   getInspectedClickId,
@@ -9,10 +6,15 @@ import {
   toggleHoverInspect,
   unhoverInspect,
 } from 'app/state/ui'
+import { compose, withProps } from 'recompose'
+import { connect } from 'react-redux'
+import { getCandidates } from 'app/state/candidates'
+import { Redirect } from 'react-router-dom'
+import * as R from 'ramda'
 import chartTypes from 'app/services/chartTypes'
+import qs from 'query-string'
 import React from 'react'
 import withStyleableContainer from 'app/utils/withStyleableContainer'
-import * as R from 'ramda'
 
 export default compose(
   withStyleableContainer,
@@ -31,9 +33,14 @@ export default compose(
     const cat = match.params.cat
       ? chartTypes.getCatByKey(match.params.cat)
       : chartTypes.getDefaultCat()
+
+    if (!cat) return { shouldRedirect: true }
+
     const type = match.params.type
       ? chartTypes.getTypeByKey(match.params.type)
       : chartTypes.getDefaultType(cat.key)
+
+    if (!type) return { shouldRedirect: true }
 
     return {
       candidates: cachedMapCandidates(candidates, type, {
@@ -46,7 +53,10 @@ export default compose(
       typeTitle: type.title,
     }
   })
-)(({ Component, ...props }) => <Component {...props} />)
+)(({ Component, shouldRedirect, location, ...props }) =>
+  shouldRedirect
+    ? <Redirect to={'/404?' + qs.stringify({ referrer: location.pathname })} />
+    : <Component {...props} />)
 
 /*
  * Memoize candidate mapping to avoid unnecessary redraw on update. An example of unnecessary

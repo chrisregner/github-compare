@@ -1,9 +1,10 @@
 import 'tachyons/css/tachyons.min.css' // functional css library: http://tachyons.io
 import React from 'react'
-import { Route } from 'react-router-dom'
+import { Switch, Route } from 'react-router-dom'
 import SearchContainer from 'app/sections/SearchContainer'
 import CompareContainer from 'app/sections/CompareContainer'
 import Header from 'app/sections/Header'
+import NotFound from 'app/sections/NotFound'
 
 const App = () =>
   <div className='flex near-black sans-serif'>
@@ -12,8 +13,11 @@ const App = () =>
     </div>
 
     <div className='flex-auto mw8'>
-      <Route exact path='/' component={SearchContainer} />
-      <Route path='/compare/:cat?/:type?' component={CompareContainer} />
+      <Switch>
+        <Route exact path='/' component={SearchContainer} />
+        <Route path='/compare/:cat?/:type?' component={CompareContainer} />
+        <Route component={NotFound} />
+      </Switch>
     </div>
 
     <style jsx global>{`
