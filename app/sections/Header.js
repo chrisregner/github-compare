@@ -42,39 +42,37 @@ const Header = ({ width }) => {
     </div>
     : <Menu width='14rem' pageWrapId='page-container' outerContainerId='outer-container'>
       {contents}
-      <style jsx global>{MenuStyles}</style>
+      <style jsx global>{`
+        /* Position and sizing of burger button */
+        .bm-burger-button {
+          position: fixed;
+          right: 1rem;
+          top: 1rem;
+          width: 2rem;
+          height: 1.75rem;
+        }
+
+        /* Color/shape of burger icon bars */
+        .bm-burger-bars { background: #333; }
+
+        /* Position and sizing of clickable cross button */
+        .bm-cross-button {
+          top: 1.25rem;
+          height: 24px;
+          width: 24px;
+        }
+
+        /* Color/shape of close button cross */
+        .bm-cross { background: #fff; }
+
+        /* Styling of overlay */
+        .bm-overlay { background: rgba(0, 0, 0, 0.3); }
+      `}</style>
     </Menu>
 }
 
 Header.propTypes = {
   width: PropTypes.number,
 }
-
-const MenuStyles = `
-  /* Position and sizing of burger button */
-  .bm-burger-button {
-    position: fixed;
-    right: 1rem;
-    top: 1rem;
-    width: 2rem;
-    height: 1.75rem;
-  }
-
-  /* Color/shape of burger icon bars */
-  .bm-burger-bars { background: #333; }
-
-  /* Position and sizing of clickable cross button */
-  .bm-cross-button {
-    top: 1.25rem;
-    height: 24px;
-    width: 24px;
-  }
-
-  /* Color/shape of close button cross */
-  .bm-cross { background: #fff; }
-
-  /* Styling of overlay */
-  .bm-overlay { background: rgba(0, 0, 0, 0.3); }
-`
 
 export default withContainerWidth()(Header)
