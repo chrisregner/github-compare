@@ -4,8 +4,7 @@
 
 # todo now
 
-- PieChart and BarChart debounce and loader
-- add infos
+- launch
 
 # todo
 

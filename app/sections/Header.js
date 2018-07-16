@@ -7,15 +7,32 @@ import PropTypes from 'prop-types'
 
 const Header = ({ width }) => {
   const contents
-    = <div className='min-vh-100 bg-dark-gray'>
-      <h1 className='ph3 pt3 pb4 pt4-l f4 white'>Github Compare</h1>
+    = <div className='relative min-vh-100 bg-dark-gray pb5'>
+      <h1 className='mh3 mb2 pt3 pt4-l f4 white lh-solid'>Github Compare</h1>
+      <p className='mh3 mb4 f7 lh-title moon-gray i'>Search Repositories, Select, and&nbsp;Compare</p>
+
       <NavContainer />
-      <CandidatesContainer />
+
+      <div className='pt4 pb3 ph3 f6'>
+        <div className='mb1 silver lh-solid'>Selected Repos:</div>
+        <CandidatesContainer className='lh-copy silver' />
+      </div>
+
+      <div className='absolute bottom-0 pa3 lh-title f7 silver'>
+        By
+        {' '}<a href='http://chrisregner.com/' className='gray'>
+          Christopher Regner
+        </a>. <br />
+        View source
+        {' '}<a href='https://github.com/chrisregner/github-compare' className='gray'>
+          here
+        </a>.
+      </div>
     </div>
 
-  return width >= 600
+  return width >= 720
     ? <div className='_container-outer'>
-      <div className='_container-inner w5 fixed'>
+      <div className='_container-inner fixed h-100 w5 overflow-auto'>
         {contents}
       </div>
       <style jsx>{`
@@ -40,15 +57,11 @@ const MenuStyles = `
     right: 1rem;
     top: 1rem;
     width: 2rem;
-    height: 1.75rem
-
-    ;
+    height: 1.75rem;
   }
 
   /* Color/shape of burger icon bars */
-  .bm-burger-bars {
-    background: #333;
-  }
+  .bm-burger-bars { background: #333; }
 
   /* Position and sizing of clickable cross button */
   .bm-cross-button {
@@ -58,14 +71,10 @@ const MenuStyles = `
   }
 
   /* Color/shape of close button cross */
-  .bm-cross {
-    background: #fff;
-  }
+  .bm-cross { background: #fff; }
 
   /* Styling of overlay */
-  .bm-overlay {
-    background: rgba(0, 0, 0, 0.3);
-  }
+  .bm-overlay { background: rgba(0, 0, 0, 0.3); }
 `
 
 export default withContainerWidth()(Header)

@@ -19,8 +19,8 @@ const App = () =>
     </div>
 
     <style jsx global>{`
-      body {
-        font-size: 14px;
+      html {
+        font-size: 15px;
         min-width: 320px;
       }
 
@@ -28,9 +28,8 @@ const App = () =>
       h1, h2, h3, h4, h5, h6, p { margin: 0 }
       h1, h2, h3, h4, h5, h6 { font-weight: normal; }
 
-
-      @media screen and (min-width: 48em) {
-        body { font-size: 16px; }
+      @media screen and (min-width: 420px) {
+        html { font-size: 16px; }
       }
     `}</style>
   </div>

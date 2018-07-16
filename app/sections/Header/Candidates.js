@@ -1,9 +1,9 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import withStyleableContainer from 'app/utils/withStyleableContainer'
 
 const Candidates = ({ candidates }) =>
-  <div className='pt4 pb3 ph3 f6 silver lh-copy'>
-    <div className='mb2'>Selected Repos:</div>
+  <React.Fragment>
     {candidates.length
       ? candidates.map((cand, i) =>
         <span style={{ color: cand.color }} key={cand.name}>
@@ -12,13 +12,14 @@ const Candidates = ({ candidates }) =>
         </span>
       )
       : '(No repo selected)'}
-  </div>
+  </React.Fragment>
 
 Candidates.propTypes = {
+
   candidates: PropTypes.arrayOf(PropTypes.shape({
     name: PropTypes.string.isRequired,
     color: PropTypes.string.isRequired,
   })).isRequired,
 }
 
-export default Candidates
+export default withStyleableContainer(Candidates)

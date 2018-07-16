@@ -33,8 +33,18 @@ const PieChart = ({
       </span>
       {typeTitle} Pie Chart
     </h2>
+
     {isLoading && <ReactLoading className='mv6 center db' type='spin' color='#333333' />}
-    <svg className={c('b', isLoading && 'dn')} ref={setSvgRef} />
+
+    <div className='_svg-container flex'>
+      <svg className={c('b', isLoading && 'dn')} ref={setSvgRef} />
+    </div>
+
+    <style jsx>{`
+      @media screen and (max-width: 719px) {
+        ._svg-container { justify-content: center; }
+      }
+    `}</style>
   </div>
 
 const enhance = compose(
@@ -102,7 +112,7 @@ const drawChart = (inst) => {
   } = inst
 
   svgRef.innerHTML = '' // Remove any previous chart
-  svgRef.setAttribute('width', '100%')
+  svgRef.setAttribute('width', grossDiameter)
   svgRef.setAttribute('height', grossDiameter)
 
   const svg = d3.select(svgRef)
