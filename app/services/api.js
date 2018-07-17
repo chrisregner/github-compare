@@ -3,7 +3,8 @@ import { HttpLink } from 'apollo-link-http'
 import { setContext } from 'apollo-link-context'
 import { InMemoryCache } from 'apollo-cache-inmemory'
 
-const TOKEN = '418405fe479a302151118a2c072be43a19c7e89b'
+const TOKEN = 'ac7711077f78df8eae4c311921c9f5108ac35646'
+
 const GITHUB_ENDPOINT = 'https://api.github.com/graphql'
 
 const authLink = setContext((_, { headers }) => {
