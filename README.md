@@ -1,6 +1,6 @@
 # Github Compare
 
-React.js/D3/GraphQL app for comparing github repositories' stats with charts (Bar, Pie, Line chart)
+React.js/D3/GraphQL app for comparing github repositories' stats with charts (Bar, Pie, Line chart). See [live](https://chrisregner.github.io/github-compare).
 
 # todo
 
